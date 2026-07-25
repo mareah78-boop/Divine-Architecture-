@@ -1,165 +1,56 @@
 import streamlit as st
-import json
-import io
-import os
+from io import BytesIO
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 
 # ==========================================
-# 1. HELPER FUNCTIONS & CALCULATIONS
+# 1. PAGE CONFIGURATION & STYLING
 # ==========================================
+st.set_page_config(
+    page_title="MetaMatrix Destiny Engine",
+    page_icon="✨",
+    layout="centered"
+)
 
-def reduce_to_22(n):
-    """Reduces numbers greater than 22 by adding digits together, up to 22 max."""
-    while n > 22:
-        n = sum(int(digit) for digit in str(n))
-    return n
-
-def calculate_full_matrix(day, month, year):
-    """Calculates all Core, Ancestral, Destiny, and Chakra energies."""
-    # Core Primary Nodes
-    top = reduce_to_22(day)
-    left = reduce_to_22(month)
-    right = reduce_to_22(sum(int(d) for d in str(year)))
-    bottom = reduce_to_22(top + left + right)
-    center = reduce_to_22(top + left + right + bottom)
-    
-    # Ancestral / Diagonal Lines
-    father_line_1 = reduce_to_22(top + left)      # Top-Left Diagonal
-    father_line_2 = reduce_to_22(right + bottom)  # Bottom-Right Diagonal
-    mother_line_1 = reduce_to_22(top + right)     # Top-Right Diagonal
-    mother_line_2 = reduce_to_22(left + bottom)   # Bottom-Left Diagonal
-    
-    # Destiny Purposes
-    personal_destiny = reduce_to_22((top + bottom) + (left + right))
-    social_destiny = reduce_to_22((father_line_1 + father_line_2) + (mother_line_1 + mother_line_2))
-    spiritual_destiny = reduce_to_22(personal_destiny + social_destiny)
-    
-    # Chakra Energy Alignment
-    chakras = {
-        "Sahasrara (Crown)": reduce_to_22(top + center),
-        "Ajna (Third Eye)": reduce_to_22(top + left + center),
-        "Vishuddha (Throat)": reduce_to_22(left + center),
-        "Anahata (Heart)": center,
-        "Manipura (Solar Plexus)": reduce_to_22(bottom + center),
-        "Svadhisthana (Sacral)": reduce_to_22(right + center),
-        "Muladhara (Root)": reduce_to_22(bottom + right)
-    }
-
-    return {
-        "core": {
-            "top": top,
-            "left": left,
-            "right": right,
-            "bottom": bottom,
-            "center": center
-        },
-        "ancestral": {
-            "Father Line (Top-Left to Bottom-Right)": f"{father_line_1} - {father_line_2}",
-            "Mother Line (Top-Right to Bottom-Left)": f"{mother_line_1} - {mother_line_2}"
-        },
-        "destiny": {
-            "personal": personal_destiny,
-            "social": social_destiny,
-            "spiritual": spiritual_destiny
-        },
-        "chakras": chakras
-    }
-
-# ==========================================
-# 2. FULL PDF GENERATOR (REPORTLAB)
-# ==========================================
-
-def generate_full_pdf(matrix_data):
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=36, leftMargin=36, topMargin=36, bottomMargin=36)
-    story = []
-    
-    styles = getSampleStyleSheet()
-    
-    title_style = ParagraphStyle(
-        'DocTitle',
-        parent=styles['Heading1'],
-        fontSize=20,
-        leading=24,
-        textColor=colors.HexColor('#1E1E1E'),
-        spaceAfter=12
-    )
-    
-    section_style = ParagraphStyle(
-        'SectionHeader',
-        parent=styles['Heading2'],
-        fontSize=14,
-        leading=18,
-        textColor=colors.HexColor('#2C3E50'),
-        spaceBefore=12,
-        spaceAfter=6
-    )
-    
-    body_style = ParagraphStyle(
-        'BodyTextCustom',
-        parent=styles['Normal'],
-        fontSize=10,
-        leading=14,
-        textColor=colors.HexColor('#333333'),
-        spaceAfter=4
-    )
-
-    # Document Header
-    story.append(Paragraph("MetaMatrix Destiny - Detailed Personal Analysis", title_style))
-    story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#CCCCCC'), spaceAfter=12))
-
-    # 1. Core Energies
-    core = matrix_data['core']
-    story.append(Paragraph("Core Matrix Energies", section_style))
-    story.append(Paragraph(f"<b>Crown / Top Energy:</b> {core['top']}", body_style))
-    story.append(Paragraph(f"<b>Left / Karma:</b> {core['left']}", body_style))
-    story.append(Paragraph(f"<b>Right / Talent:</b> {core['right']}", body_style))
-    story.append(Paragraph(f"<b>Karmic Tail / Base:</b> {core['bottom']}", body_style))
-    story.append(Paragraph(f"<b>Center / Soul:</b> {core['center']}", body_style))
-    story.append(Spacer(1, 8))
-
-    # 2. Ancestral Lineage Channels
-    story.append(Paragraph("Ancestral Lineage Channels", section_style))
-    for line_name, value in matrix_data['ancestral'].items():
-        story.append(Paragraph(f"<b>{line_name}:</b> {value}", body_style))
-    story.append(Spacer(1, 8))
-
-    # 3. Destiny Purposes
-    destiny = matrix_data['destiny']
-    story.append(Paragraph("Destiny Purposes", section_style))
-    story.append(Paragraph(f"<b>Personal Destiny (20-40):</b> {destiny['personal']}", body_style))
-    story.append(Paragraph(f"<b>Social Destiny (40-60):</b> {destiny['social']}", body_style))
-    story.append(Paragraph(f"<b>Spiritual / Lifetime Purpose:</b> {destiny['spiritual']}", body_style))
-    story.append(Spacer(1, 8))
-
-    # 4. Chakra Alignment
-    story.append(Paragraph("Chakra Energy Map", section_style))
-    for chakra_name, val in matrix_data['chakras'].items():
-        story.append(Paragraph(f"<b>{chakra_name}:</b> {val}", body_style))
-    story.append(Spacer(1, 8))
-
-    # Footer
-    story.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor('#DDDDDD'), spaceBefore=12, spaceAfter=8))
-    story.append(Paragraph("Generated via MetaMatrix Destiny Engine", body_style))
-
-    doc.build(story)
-    buffer.seek(0)
-    return buffer
-
-# ==========================================
-# 3. STREAMLIT INTERFACE
-# ==========================================
-
-st.set_page_config(page_title="MetaMatrix Destiny", page_icon="✨", layout="wide")
 st.title("✨ METAMATRIX DESTINY ✨")
-# Instructions & Overview Section
+
+# ==========================================
+# 2. ENERGY INTERPRETATIONS DICTIONARY
+# ==========================================
+ENERGY_DESCRIPTIONS = {
+    1: "Energy of the Magician / Creator: Pioneer spirit, strong willpower, resourcefulness, and leadership.",
+    2: "Energy of Harmony / Intuition: Receptivity, secret knowledge, deep intuition, and diplomacy.",
+    3: "Energy of the Empress / Fertility: Creation, abundance, feminine power, nurture, and beauty.",
+    4: "Energy of the Emperor / Structure: Authority, stability, order, discipline, and organization.",
+    5: "Energy of the Teacher / Traditions: Wisdom, spiritual laws, guidance, family values, and learning.",
+    6: "Energy of Relations / Choice: Love, harmony, decision-making, aesthetic sense, and deep connections.",
+    7: "Energy of the Charioteer / Victory: Movement, drive, goal orientation, leadership, and triumph over obstacles.",
+    8: "Energy of Justice / Balance: Karmic law, cause and effect, truth, integrity, and equilibrium.",
+    9: "Energy of the Hermit / Wisdom: Deep introspection, spiritual knowledge, solitude, and inner guidance.",
+    10: "Energy of the Wheel of Fortune / Destiny: Flow, luck, cycle changes, trust in life, and synchronicities.",
+    11: "Energy of Strength / Potential: Great physical and inner vitality, passion, endurance, and power.",
+    12: "Energy of the Visionary / Service: New perspectives, selfless service, compassion, and deep reflection.",
+    13: "Energy of Transformation / Rebirth: Endings and beginnings, radical change, letting go, and regeneration.",
+    14: "Energy of Temperance / Healing: Moderation, art, emotional equilibrium, patience, and balance.",
+    15: "Energy of the Shadow / Passion: Charisma, material magnetism, uncovering illusions, and confronting shadows.",
+    16: "Energy of the Tower / Awakening: Destruction of false structures, rapid spiritual growth, and breakthroughs.",
+    17: "Energy of the Star / Inspiration: Creativity, hope, talent, public recognition, and higher intuition.",
+    18: "Energy of the Moon / Subconscious: Imagination, overcoming fears, intuition, magic, and materialization.",
+    19: "Energy of the Sun / Joy: Public influence, leadership, success, prosperity, and childlike happiness.",
+    20: "Energy of the Resurrection / Family Karma: Ancestral rebirth, deep awakenings, system transformation, and legacy.",
+    21: "Energy of the World / Expansion: Global vision, peace, freedom, completion, and limitless potential.",
+    22: "Energy of Freedom / Fool: Unconditional freedom, trust in the universe, lightness, and new beginnings."
+}
+
+# ==========================================
+# 3. USER INSTRUCTIONS & OVERVIEW
+# ==========================================
 with st.expander("📖 **How to Use & What This Analysis Means**", expanded=True):
     st.markdown("""
     ### Welcome to MetaMatrix Destiny
-    This tool calculates your unique energy blueprint based on the ancient **Destination Matrix** system, combining numerology and sacred geometry to map your core life energies, inherited ancestral patterns, and spiritual evolution.
+    This tool calculates your unique energy blueprint based on the **Destination Matrix** system, combining numerology and sacred geometry to map your core life energies, inherited ancestral patterns, and spiritual evolution.
 
     ---
 
@@ -167,90 +58,193 @@ with st.expander("📖 **How to Use & What This Analysis Means**", expanded=True
     1. **Enter Your Birthdate:** Select your exact Day, Month, and Year of birth using the inputs below.
     2. **Calculate Your Matrix:** Click the **Calculate Matrix** button to process your blueprint.
     3. **Explore Your Energies:** Review your Core, Ancestral, Destiny, and Chakra maps directly on screen.
-    4. **Download Your Report:** Click the **Download Complete Detailed PDF Report** button at the bottom to save your full analysis as a document.
+    4. **Download Your Detailed Report:** Click the **Download Complete Detailed PDF Report** button to generate a PDF with full energy interpretations.
 
     ---
 
-    ### 🧬 Understanding Your Results:
-    * **Core Energies:** 
-      * **Top (Crown):** Your spiritual connection and highest personal aspirations.
-      * **Left (Karma):** Lessons carried into this life and primary personal challenges.
-      * **Right (Talent):** Inherent strengths, natural gifts, and creative potential.
-      * **Bottom (Base/Karmic Tail):** Unconscious patterns to transform and ground in this lifetime.
-      * **Center (Soul):** The heart of your identity—what brings your soul comfort and alignment.
-    
-    * **Ancestral Lineage Channels:**
-      * **Father & Mother Lines:** Inherited gifts, strengths, and energetic dynamics passed down through your maternal and paternal bloodlines.
-
-    * **Destiny Purposes:**
-      * **Personal Destiny (Ages 20–40):** Your focus on self-mastery and personal growth.
-      * **Social Destiny (Ages 40–60):** Your impact on society, community, and those around you.
-      * **Spiritual Purpose:** Your overall lifetime synthesis and soul mission.
-
-    * **Chakra Energy Map:**
-      * Shows how these core numbers align across your seven primary energy centers, highlighting where your energy flows naturally and where attention is needed.
+    ### 🧬 Key Sections Overview:
+    * **Core Matrix Energies:** Maps your primary Archetypes (Crown, Karma, Talent, Karmic Tail/Base, and Soul Center).
+    * **Ancestral Lineage Channels:** Reveals inherited lineage energies along the Father and Mother diagonals.
+    * **Destiny Purposes:** Breaks down your Personal (20–40), Social (40–60), and Lifetime Spiritual purpose.
+    * **Chakra Energy Map:** Maps your numbers across the 7 primary energy centers.
     """)
-# Sidebar Navigation
-view_mode = st.sidebar.radio("Navigation", ["Matrix Generator", "Code Database Interface"])
 
-if view_mode == "Matrix Generator":
-    st.header("Matrix Calculation & Report Engine")
-    
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        day = st.number_input("Day of Birth", min_value=1, max_value=31, value=15)
-    with col2:
-        month = st.number_input("Month of Birth", min_value=1, max_value=12, value=8)
-    with col3:
-        year = st.number_input("Year of Birth", min_value=1900, max_value=2100, value=1990)
-        
-    if st.button("Calculate Matrix"):
-        matrix_results = calculate_full_matrix(day, month, year)
-        st.session_state['matrix_results'] = matrix_results
-        
-    if 'matrix_results' in st.session_state:
-        res = st.session_state['matrix_results']
-        
-        st.markdown("---")
-        c1, c2, c3 = st.columns(3)
-        
-        with c1:
-            st.subheader("Core Energies")
-            for k, v in res['core'].items():
-                st.write(f"**{k.capitalize()}:** {v}")
-                
-        with c2:
-            st.subheader("Ancestral Lines")
-            for k, v in res['ancestral'].items():
-                st.write(f"**{k}:** {v}")
-                
-            st.subheader("Destiny Purposes")
-            for k, v in res['destiny'].items():
-                st.write(f"**{k.capitalize()}:** {v}")
-                
-        with c3:
-            st.subheader("Chakra Alignment")
-            for k, v in res['chakras'].items():
-                st.write(f"**{k}:** {v}")
+# ==========================================
+# 4. CALCULATION ENGINE LOGIC
+# ==========================================
+def reduce_to_22(n):
+    """Reduces any integer to a number between 1 and 22 via digit summing if > 22."""
+    n = abs(int(n))
+    while n > 22:
+        n = sum(int(digit) for digit in str(n))
+    return n
 
-        st.markdown("---")
-        
-        # Download PDF Button
-        pdf_bytes = generate_full_pdf(res)
-        st.download_button(
-            label="📄 Download Complete Detailed PDF Report",
-            data=pdf_bytes,
-            file_name="MetaMatrix_Destiny_Full_Report.pdf",
-            mime="application/pdf"
-        )
+def calculate_full_matrix(day, month, year):
+    # Core Matrix Nodes
+    top = reduce_to_22(day)
+    left = reduce_to_22(month)
+    year_sum = sum(int(d) for d in str(year))
+    right = reduce_to_22(year_sum)
+    bottom = reduce_to_22(top + left + right)
+    center = reduce_to_22(top + left + right + bottom)
+    
+    # Ancestral Lineage Diagonals
+    father_tl = reduce_to_22(top + left)
+    father_br = reduce_to_22(right + bottom)
+    mother_tr = reduce_to_22(top + right)
+    mother_bl = reduce_to_22(left + bottom)
 
-elif view_mode == "Code Database Interface":
-    st.header("Code Database Interface")
+    # Destiny Purposes
+    personal_destiny = reduce_to_22(top + bottom)
+    social_destiny = reduce_to_22(left + right)
+    spiritual_destiny = reduce_to_22(personal_destiny + social_destiny)
+
+    # Chakra Energy Alignment
+    sahasrara = reduce_to_22(top + left)
+    ajna = reduce_to_22(top + center)
+    vishuddha = reduce_to_22(left + center)
+    anahata = center
+    manipura = reduce_to_22(right + center)
+    svadhisthana = reduce_to_22(bottom + center)
+    muladhara = reduce_to_22(bottom + right)
+
+    return {
+        "core": {
+            "Crown / Top Energy": top,
+            "Left / Karma": left,
+            "Right / Talent": right,
+            "Karmic Tail / Base": bottom,
+            "Center / Soul": center
+        },
+        "ancestral": {
+            "Father Line (Top-Left to Bottom-Right)": f"{father_tl} - {father_br}",
+            "Mother Line (Top-Right to Bottom-Left)": f"{mother_tr} - {mother_bl}"
+        },
+        "destiny": {
+            "Personal Destiny (20-40)": personal_destiny,
+            "Social Destiny (40-60)": social_destiny,
+            "Spiritual / Lifetime Purpose": spiritual_destiny
+        },
+        "chakra": {
+            "Sahasrara (Crown)": sahasrara,
+            "Ajna (Third Eye)": ajna,
+            "Vishuddha (Throat)": vishuddha,
+            "Anahata (Heart)": anahata,
+            "Manipura (Solar Plexus)": manipura,
+            "Svadhisthana (Sacral)": svadhisthana,
+            "Muladhara (Root)": muladhara
+        }
+    }
+
+# ==========================================
+# 5. DETAILED PDF REPORT GENERATOR
+# ==========================================
+def generate_pdf(results):
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, 
+        pagesize=letter, 
+        rightMargin=36, 
+        leftMargin=36, 
+        topMargin=36, 
+        bottomMargin=36
+    )
+    styles = getSampleStyleSheet()
     
-    if os.path.exists("codes.json"):
-        with open("codes.json", "r") as f:
-            codes_data = json.load(f)
-        st.json(codes_data)
-    else:
-        st.info("codes.json file not found in current directory.")
-    
+    # Typography Styles
+    title_style = ParagraphStyle('TitleStyle', parent=styles['Heading1'], fontSize=20, leading=24, spaceAfter=10, textColor=colors.HexColor("#1A1A1A"))
+    heading_style = ParagraphStyle('HeadingStyle', parent=styles['Heading2'], fontSize=13, leading=16, spaceBefore=12, spaceAfter=6, textColor=colors.HexColor("#2C3E50"))
+    label_style = ParagraphStyle('LabelStyle', parent=styles['Normal'], fontSize=10, leading=14, spaceAfter=2)
+    desc_style = ParagraphStyle('DescStyle', parent=styles['Italic'], fontSize=9, leading=12, spaceAfter=8, textColor=colors.HexColor("#555555"))
+
+    elements = []
+
+    # Document Header
+    elements.append(Paragraph("MetaMatrix Destiny - Detailed Personal Analysis", title_style))
+    elements.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#CCCCCC"), spaceAfter=12))
+
+    # Helper function to append detailed sections
+    def append_section(title, data_dict):
+        elements.append(Paragraph(title, heading_style))
+        for label, val in data_dict.items():
+            elements.append(Paragraph(f"<b>{label}:</b> {val}", label_style))
+            if isinstance(val, int) and val in ENERGY_DESCRIPTIONS:
+                elements.append(Paragraph(f"└ <i>{ENERGY_DESCRIPTIONS[val]}</i>", desc_style))
+        elements.append(Spacer(1, 6))
+
+    # Core Energies Section
+    append_section("1. Core Matrix Energies", results['core'])
+
+    # Ancestral Channels Section
+    elements.append(Paragraph("2. Ancestral Lineage Channels", heading_style))
+    for line, numbers in results['ancestral'].items():
+        elements.append(Paragraph(f"<b>{line}:</b> {numbers}", label_style))
+    elements.append(Spacer(1, 6))
+
+    # Destiny Purposes Section
+    append_section("3. Destiny Purposes", results['destiny'])
+
+    # Chakra Map Section
+    append_section("4. Chakra Energy Map", results['chakra'])
+
+    # Footer
+    elements.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#CCCCCC"), spaceBefore=12, spaceAfter=8))
+    elements.append(Paragraph("Generated via MetaMatrix Destiny Engine", desc_style))
+
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer
+
+# ==========================================
+# 6. USER INPUT & APPLICATION UI
+# ==========================================
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    day = st.number_input("Day of Birth", min_value=1, max_value=31, value=19)
+with col2:
+    month = st.number_input("Month of Birth", min_value=1, max_value=12, value=12)
+with col3:
+    year = st.number_input("Year of Birth", min_value=1900, max_value=2100, value=1978)
+
+if st.button("Calculate Matrix", type="primary"):
+    st.session_state['results'] = calculate_full_matrix(day, month, year)
+
+if 'results' in st.session_state:
+    res = st.session_state['results']
+    st.markdown("---")
+
+    col_a, col_b, col_c = st.columns(3)
+
+    with col_a:
+        st.subheader("Core Energies")
+        for k, v in res['core'].items():
+            st.write(f"**{k}:** {v}")
+            st.caption(ENERGY_DESCRIPTIONS.get(v, ""))
+
+    with col_b:
+        st.subheader("Ancestral Lines")
+        for k, v in res['ancestral'].items():
+            st.write(f"**{k}:** {v}")
+
+        st.subheader("Destiny Purposes")
+        for k, v in res['destiny'].items():
+            st.write(f"**{k}:** {v}")
+            st.caption(ENERGY_DESCRIPTIONS.get(v, ""))
+
+    with col_c:
+        st.subheader("Chakra Alignment")
+        for k, v in res['chakra'].items():
+            st.write(f"**{k}:** {v}")
+            st.caption(ENERGY_DESCRIPTIONS.get(v, ""))
+
+    st.markdown("---")
+
+    # PDF Download Button
+    pdf_data = generate_pdf(res)
+    st.download_button(
+        label="📄 Download Complete Detailed PDF Report",
+        data=pdf_data,
+        file_name="MetaMatrix_Destiny_Full_Report.pdf",
+        mime="application/pdf"
+    )
