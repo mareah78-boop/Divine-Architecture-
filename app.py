@@ -366,7 +366,7 @@ with col2:
 with col3:
     year = st.number_input("Year of Birth", min_value=1900, max_value=2100, value=1978)
 with col4:
-    tob = st.time_input("Time of Birth", value=datetime.time(12, 0))
+    tob = st.time_input("Time of Birth", value=datetime.time(12, 0), step=60)
 
 if st.button("Calculate Matrix & Generate Reading", type="primary"):
     st.session_state['results'] = calculate_full_matrix(day, month, year)
