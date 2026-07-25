@@ -1,339 +1,476 @@
+import datetime
+import math
+import io
 import streamlit as st
-from io import BytesIO
+import swisseph as swe
+
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable, PageBreak
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 
 # ==========================================
-# 1. PAGE CONFIGURATION & STYLING
+# 1. ARCHETYPAL DICTIONARY & CORE DATA
 # ==========================================
-st.set_page_config(
-    page_title="MetaMatrix Destiny Engine",
-    page_icon="✨",
-    layout="wide"
-)
 
-st.title("✨ METAMATRIX DESTINY ✨")
-
-# ==========================================
-# 2. ENERGY INTERPRETATIONS & POSITION MAPS
-# ==========================================
-ENERGY_DESCRIPTIONS = {
-    1: "The Magician / Creator: Pioneer spirit, strong willpower, resourcefulness, and leadership. You are a natural manifestor with the ability to turn thoughts into physical reality.",
-    2: "Harmony / Intuition: Receptivity, secret knowledge, deep intuition, and diplomacy. You thrive when balancing dualities and listening to your inner voice.",
-    3: "The Empress / Fertility: Creation, abundance, feminine power, nurture, and beauty. Represents growth, financial flow, and bringing projects to fruition.",
-    4: "The Emperor / Structure: Authority, stability, order, discipline, and organization. Demands leadership, personal accountability, and building lasting foundations.",
-    5: "The Teacher / Traditions: Wisdom, spiritual laws, guidance, family values, and learning. You are called to acquire knowledge and share truth with integrity.",
-    6: "Relations / Choice: Love, harmony, decision-making, aesthetic sense, and deep connections. Focuses on accepting yourself and making choices alignment with your heart.",
-    7: "The Charioteer / Victory: Movement, drive, goal orientation, leadership, and triumph over obstacles. Demands clear direction and active momentum.",
-    8: "Justice / Balance: Karmic law, cause and effect, truth, integrity, and equilibrium. Reminds you that every action brings an equal reaction; seek systemic clarity.",
-    9: "The Hermit / Wisdom: Deep introspection, spiritual knowledge, solitude, and inner guidance. Encourages taking time away from noise to access deep inner truths.",
-    10: "The Wheel of Fortune / Destiny: Flow, luck, cycle changes, trust in life, and synchronicities. Teaches you to ride the waves of change without resisting the current.",
-    11: "Strength / Potential: Great physical and inner vitality, passion, endurance, and power. Shows the ability to master raw impulses through gentleness and self-belief.",
-    12: "The Visionary / Service: New perspectives, selfless service, compassion, and deep reflection. Asks you to reframe sacrifices and look at the world from new angles.",
-    13: "Transformation / Rebirth: Endings and beginnings, radical change, letting go, and regeneration. Clears out dead weight so true transformation can take place.",
-    14: "Temperance / Healing: Moderation, art, emotional equilibrium, patience, and balance. Brings steady emotional synthesis, creative flow, and inner peace.",
-    15: "The Shadow / Passion: Charisma, material magnetism, uncovering illusions, and confronting shadows. A test of spiritual power over material temptation.",
-    16: "The Tower / Awakening: Destruction of false structures, rapid spiritual growth, and breakthroughs. Shatters outdated illusions to build on absolute truth.",
-    17: "The Star / Inspiration: Creativity, hope, talent, public recognition, and higher intuition. Encourages shining your unique light brightly without fear.",
-    18: "The Moon / Subconscious: Imagination, overcoming fears, intuition, magic, and materialization. Unlocks deep psychic awareness while mastering subconscious fears.",
-    19: "The Sun / Joy: Public influence, leadership, success, prosperity, and childlike happiness. Radiates warmth, abundance, and generous, confident expression.",
-    20: "The Resurrection / Family Karma: Ancestral rebirth, deep awakenings, system transformation, and legacy. Calls you to heal bloodline patterns and awaken spiritual gifts.",
-    21: "The World / Expansion: Global vision, peace, freedom, completion, and limitless potential. Represents cosmic alignment, international connections, and wholeness.",
-    22: "Freedom / Fool: Unconditional freedom, trust in the universe, lightness, and new beginnings. Step into the unknown with childlike trust and total openness."
+ARCHETYPES = {
+    1: {"title": "The Magician", "theme": "Manifestation, Resourcefulness, Power", "shadow": "Manipulation, Unused Talent"},
+    2: {"title": "The High Priestess", "theme": "Intuition, Sacred Knowledge, Inner Voice", "shadow": "Secrets, Disconnection from Self"},
+    3: {"title": "The Empress", "theme": "Abundance, Nurturing, Creation", "shadow": "Stagnation, Over-dependence"},
+    4: {"title": "The Emperor", "theme": "Structure, Authority, Stability", "shadow": "Rigidity, Control Issues"},
+    5: {"title": "The Hierophant", "theme": "Wisdom, Spiritual Guidance, Tradition", "shadow": "Dogma, Blind Conformity"},
+    6: {"title": "The Lovers", "theme": "Harmony, Choices, Deep Alignment", "shadow": "Indecision, Disharmony"},
+    7: {"title": "The Chariot", "theme": "Willpower, Momentum, Victory", "shadow": "Aggression, Loss of Control"},
+    8: {"title": "Justice / Strength", "theme": "Balance, Truth, Cause & Effect", "shadow": "Karma, Self-Deception"},
+    9: {"title": "The Hermit", "theme": "Inner Light, Soul Introspection, Truth", "shadow": "Isolation, Loneliness"},
+    10: {"title": "Wheel of Fortune", "theme": "Cycles, Destiny, Universal Flow", "shadow": "Bad Luck Mentality, Resistance"},
+    11: {"title": "Strength / Passion", "theme": "Inner Fortitude, Grace, Energy Mastery", "shadow": "Self-Doubt, Repression"},
+    12: {"title": "The Hanged One", "theme": "New Perspective, Surrender, Enlightenment", "shadow": "Victim Mindset, Stagnation"},
+    13: {"title": "Death / Transformation", "theme": "Rebirth, Endings & Beginnings, Transition", "shadow": "Fear of Change, Clinging to Past"},
+    14: {"title": "Temperance", "theme": "Alchemy, Balance, Patience", "shadow": "Extremes, Impatience"},
+    15: {"title": "The Devil / Shadow", "theme": "Material Mastery, Unveiling Illusions, Passion", "shadow": "Addiction, Self-Limitation"},
+    16: {"title": "The Tower", "theme": "Awakening, Breakthrough, Rebuilding", "shadow": "Sudden Destruction, Resistance to Truth"},
+    17: {"title": "The Star", "theme": "Inspiration, Hope, Renewal", "shadow": "Discouragement, Loss of Faith"},
+    18: {"title": "The Moon", "theme": "Subconscious, Dreams, Intuitive Gifts", "shadow": "Illusion, Unfounded Fear"},
+    19: {"title": "The Sun", "theme": "Joy, Radiance, Success, Clarity", "shadow": "Ego, Burnout"},
+    20: {"title": "Judgement / Rebirth", "theme": "Calling, Higher Purpose, Karma Resolution", "shadow": "Self-Doubt, Fear of Answering Call"},
+    21: {"title": "The World", "theme": "Completion, Integration, Global Resonance", "shadow": "Incompletion, Limitation"},
+    22: {"title": "The Fool / Zero Point", "theme": "Infinite Potential, Faith, New Beginnings", "shadow": "Recklessness, Naivety"}
 }
 
-POSITION_EXPLANATIONS = {
-    "Crown / Top Energy": "Your spiritual connection, inspiration, and highest vibration. This shows how you express your highest potential and divine inspiration.",
-    "Left / Karma": "Your primary karmic lesson and challenge. This represents the hurdle or debt brought into this lifetime that requires active awareness to balance.",
-    "Right / Talent": "Your practical talent and engine for manifestation. This energy powers your material achievements, career success, and creative output.",
-    "Karmic Tail / Base": "Your subconscious root foundation. This is unhealed baggage or deeply ingrained habits that pull you down if left unaddressed.",
-    "Center / Soul": "The core of your psyche. Represents what brings your soul deep peace, emotional comfort, and central alignment when you operate authentically.",
-    "Father Line (Top-Left to Bottom-Right)": "Top-Left reveals inherited paternal strengths; Bottom-Right reveals unhealed male bloodline karma and subconscious patterns.",
-    "Mother Line (Top-Right to Bottom-Left)": "Top-Right reveals inherited maternal talents; Bottom-Left reveals passed-down female bloodline beliefs, traditions, and lessons.",
-    "Personal Destiny (20-40)": "Your core developmental phase (ages 20 to 40). Focuses on building self-mastery, personal identity, and emotional independence.",
-    "Social Destiny (40-60)": "Your mid-life expansion (ages 40 to 60). Focuses on your contribution to community, relationship dynamics, and societal impact.",
-    "Spiritual / Lifetime Purpose": "Your overarching soul mission across this entire incarnation—the ultimate synthesis of your personal and social growth."
+# 64 Gate sequence in the Wheel starting from 0° Aries
+GATE_SEQUENCE = [
+    25, 17, 21, 51, 42, 3, 27, 24, 2, 23, 8, 20, 16, 35, 45, 12,
+    15, 52, 39, 53, 62, 56, 31, 33, 7, 4, 29, 59, 40, 64, 47, 6,
+    46, 18, 48, 57, 32, 50, 28, 44, 1, 43, 14, 34, 9, 5, 26, 11,
+    10, 58, 38, 54, 61, 60, 41, 19, 13, 49, 30, 55, 37, 63, 22, 36
+]
+
+CHANNELS_MAP = {
+    (1, 8): "Channel of Inspiration (Creative Role Model)",
+    (2, 14): "Channel of the Beat (Keeper of Key & Direction)",
+    (3, 60): "Channel of Mutation (Fluctuating Pulse of Change)",
+    (4, 63): "Channel of Logic (Mental Ease & Doubt Resolution)",
+    (5, 15): "Channel of Rhythm (Flowing with Life's Patterns)",
+    (6, 59): "Channel of Mating (Emotional Openness & Bonding)",
+    (7, 31): "Channel of the Alpha (Leadership for the Future)",
+    (9, 52): "Channel of Concentration (Determined Focus)",
+    (10, 20): "Channel of Awakening (Self-Love in Action)",
+    (10, 34): "Channel of Exploration (Following One's Conscience)",
+    (10, 57): "Channel of Perfected Form (Intuitive Survival Skill)",
+    (11, 56): "Channel of Curiosity (The Seeker's Journey)",
+    (12, 22): "Channel of Openness (Emotional Expression & Art)",
+    (13, 33): "Channel of the Prodigal (The Witness & Historian)",
+    (16, 48): "Channel of Wavelength (Mastery through Talent & Depth)",
+    (17, 62): "Channel of Acceptance (Organizational Mind)",
+    (18, 58): "Channel of Judgment (Desire to Perfect & Correct)",
+    (19, 49): "Channel of Synthesis (Sensitivity & Community Needs)",
+    (21, 45): "Channel of Money (Control & Material Resource)",
+    (23, 43): "Channel of Structuring (Individual Insight Expressed)",
+    (24, 61): "Channel of Awareness (Mental Inspiration & Mystery)",
+    (25, 51): "Channel of Initiation (Leap into Unconditional Love)",
+    (26, 44): "Channel of Surrender (Enterprise & Persuasion)",
+    (27, 50): "Channel of Preservation (Nurturing & Values)",
+    (28, 38): "Channel of Struggle (Finding Purpose in Life)",
+    (29, 46): "Channel of Discovery (Succeeding where Others Fail)",
+    (30, 41): "Channel of Recognition (Focused Desire & Dreams)",
+    (32, 54): "Channel of Transformation (Ambition & Success)",
+    (34, 20): "Channel of Charisma (Thoughts into Action)",
+    (34, 57): "Channel of Power (Intuitive Instinctual Power)",
+    (35, 36): "Channel of Transitoriness (Experiential Seeker)",
+    (37, 40): "Channel of Community (Family & Emotional Bond)",
+    (39, 55): "Channel of Emoting (Provoking Higher Moods)",
+    (42, 53): "Channel of Maturation (Cyclical Growth & Cycles)",
+    (47, 64): "Channel of Abstraction (Mental Clarity from Past)",
 }
 
 # ==========================================
-# 3. USER INSTRUCTIONS & OVERVIEW
+# 2. HELPER CALCULATIONS & SWISS EPHEMERIS
 # ==========================================
-with st.expander("📖 **How to Read & Interpret Your Destiny Matrix**", expanded=True):
-    st.markdown("""
-    ### Welcome to MetaMatrix Destiny
-    This is not just a calculation engine—it is a comprehensive map of your soul's architecture using sacred geometry and numerology.
 
-    #### How to Navigate Your Analysis:
-    1. **Life Purpose Synthesis:** Your quick-start guide. Identifies your primary goal, your biggest roadblock, and the exact energy needed to overcome it.
-    2. **Core Matrix Energies:** Defines the 5 key pillars of your personality, soul comfort, gifts, and primary karmic test.
-    3. **Ancestral Lineage:** Explains inherited bloodline dynamics passed down through your mother's and father's sides.
-    4. **Destiny Eras:** Shows how your focus evolves from self-building (ages 20–40) to social contribution (40–60) and ultimate spiritual mastery.
-    5. **Chakra Alignment:** Maps your energies across the physical and subtle body centers.
-    """)
+def reduce_energy(val: int) -> int:
+    """Reduces values greater than 22 to fit the 22 Arcana system."""
+    while val > 22:
+        val = sum(int(digit) for digit in str(val))
+    return val if val > 0 else 22
 
-# ==========================================
-# 4. CALCULATION ENGINE LOGIC
-# ==========================================
-def reduce_to_22(n):
-    n = abs(int(n))
-    while n > 22:
-        n = sum(int(digit) for digit in str(n))
-    return n
-
-def calculate_full_matrix(day, month, year):
-    top = reduce_to_22(day)
-    left = reduce_to_22(month)
+def calculate_core_matrix(day: int, month: int, year: int):
+    """Calculates core matrix nodes using exact reduction rules."""
+    crown = reduce_energy(day)
+    karma = reduce_energy(month)
+    
     year_sum = sum(int(d) for d in str(year))
-    right = reduce_to_22(year_sum)
-    bottom = reduce_to_22(top + left + right)
-    center = reduce_to_22(top + left + right + bottom)
+    talent = reduce_energy(year_sum)
     
-    father_tl = reduce_to_22(top + left)
-    father_br = reduce_to_22(right + bottom)
-    mother_tr = reduce_to_22(top + right)
-    mother_bl = reduce_to_22(left + bottom)
-
-    personal_destiny = reduce_to_22(top + bottom)
-    social_destiny = reduce_to_22(left + right)
-    spiritual_destiny = reduce_to_22(personal_destiny + social_destiny)
-
-    sahasrara = reduce_to_22(top + left)
-    ajna = reduce_to_22(top + center)
-    vishuddha = reduce_to_22(left + center)
-    anahata = center
-    manipura = reduce_to_22(right + center)
-    svadhisthana = reduce_to_22(bottom + center)
-    muladhara = reduce_to_22(bottom + right)
-
+    base = reduce_energy(crown + karma + talent)
+    soul = reduce_energy(crown + karma + talent + base)
+    
+    # Lineage Channels
+    paternal_strength = reduce_energy(crown + talent)
+    paternal_karma = reduce_energy(karma + base)
+    maternal_strength = reduce_energy(crown + karma)
+    maternal_karma = reduce_energy(talent + base)
+    
+    # Destiny Eras
+    era_20_40 = reduce_energy(crown + karma)
+    era_40_60 = reduce_energy(talent + base)
+    spiritual_purpose = reduce_energy(soul + era_20_40 + era_40_60)
+    
     return {
-        "core": {
-            "Crown / Top Energy": top,
-            "Left / Karma": left,
-            "Right / Talent": right,
-            "Karmic Tail / Base": bottom,
-            "Center / Soul": center
-        },
-        "ancestral_raw": {
-            "Father Line Top-Left (Strengths)": father_tl,
-            "Father Line Bottom-Right (Unhealed Karma)": father_br,
-            "Mother Line Top-Right (Gifts)": mother_tr,
-            "Mother Line Bottom-Left (Lessons/Beliefs)": mother_bl
-        },
-        "destiny": {
-            "Personal Destiny (20-40)": personal_destiny,
-            "Social Destiny (40-60)": social_destiny,
-            "Spiritual / Lifetime Purpose": spiritual_destiny
-        },
-        "chakra": {
-            "Sahasrara (Crown)": sahasrara,
-            "Ajna (Third Eye)": ajna,
-            "Vishuddha (Throat)": vishuddha,
-            "Anahata (Heart)": anahata,
-            "Manipura (Solar Plexus)": manipura,
-            "Svadhisthana (Sacral)": svadhisthana,
-            "Muladhara (Root)": muladhara
-        }
+        "Crown": crown,
+        "Karma": karma,
+        "Talent": talent,
+        "Base": base,
+        "Soul": soul,
+        "Paternal_Strength": paternal_strength,
+        "Paternal_Karma": paternal_karma,
+        "Maternal_Strength": maternal_strength,
+        "Maternal_Karma": maternal_karma,
+        "Era_20_40": era_20_40,
+        "Era_40_60": era_40_60,
+        "Spiritual_Purpose": spiritual_purpose
     }
 
-def calculate_life_synthesis(res):
-    goal_energy = res['core']['Crown / Top Energy']
-    obstacle_energy = res['core']['Left / Karma']
-    center_energy = res['core']['Center / Soul']
-    solution_energy = reduce_to_22(obstacle_energy + center_energy)
+def longitude_to_gate_and_line(lon: float):
+    """Maps celestial longitude (0-360) directly to Human Design Gate & Line."""
+    norm_lon = lon % 360.0
+    gate_index = int(norm_lon / 5.625)
+    gate = GATE_SEQUENCE[gate_index]
     
+    remainder_deg = norm_lon % 5.625
+    line = int(remainder_deg / 0.9375) + 1
+    return gate, line
+
+def calculate_human_design_gates(year, month, day, hour, minute, utc_offset_hours=0):
+    """Calculates all 26 HD Gates using Swiss Ephemeris."""
+    dt_local = datetime.datetime(year, month, day, hour, minute) - datetime.timedelta(hours=utc_offset_hours)
+    
+    julian_day_personality = swe.julday(
+        dt_local.year, dt_local.month, dt_local.day, dt_local.hour + dt_local.minute / 60.0
+    )
+    
+    bodies = [
+        ("Sun", swe.SUN),
+        ("Moon", swe.MOON),
+        ("North Node", swe.MEAN_NODE),
+        ("Mercury", swe.MERCURY),
+        ("Venus", swe.VENUS),
+        ("Mars", swe.MARS),
+        ("Jupiter", swe.JUPITER),
+        ("Saturn", swe.SATURN),
+        ("Uranus", swe.URANUS),
+        ("Neptune", swe.NEPTUNE),
+        ("Pluto", swe.PLUTO)
+    ]
+    
+    personality_gates = {}
+    
+    # Personality (Conscious)
+    for name, body in bodies:
+        res = swe.calc_ut(julian_day_personality, body)
+        lon = res[0][0]
+        gate, line = longitude_to_gate_and_line(lon)
+        personality_gates[name] = {"gate": gate, "line": line, "longitude": lon}
+        
+    sun_lon = personality_gates["Sun"]["longitude"]
+    earth_lon = (sun_lon + 180.0) % 360.0
+    e_gate, e_line = longitude_to_gate_and_line(earth_lon)
+    personality_gates["Earth"] = {"gate": e_gate, "line": e_line, "longitude": earth_lon}
+    
+    nn_lon = personality_gates["North Node"]["longitude"]
+    sn_lon = (nn_lon + 180.0) % 360.0
+    sn_gate, sn_line = longitude_to_gate_and_line(sn_lon)
+    personality_gates["South Node"] = {"gate": sn_gate, "line": sn_line, "longitude": sn_lon}
+    
+    # Design (Unconscious) ~88 degrees prior
+    target_sun_lon = (sun_lon - 88.0) % 360.0
+    jd_design = julian_day_personality - 88.0
+    for _ in range(10):
+        res = swe.calc_ut(jd_design, swe.SUN)
+        curr_lon = res[0][0]
+        diff = (curr_lon - target_sun_lon + 180) % 360 - 180
+        if abs(diff) < 0.00001:
+            break
+        jd_design -= diff / 0.9856
+        
+    design_gates = {}
+    for name, body in bodies:
+        res = swe.calc_ut(jd_design, body)
+        lon = res[0][0]
+        gate, line = longitude_to_gate_and_line(lon)
+        design_gates[name] = {"gate": gate, "line": line, "longitude": lon}
+        
+    d_sun_lon = design_gates["Sun"]["longitude"]
+    d_earth_lon = (d_sun_lon + 180.0) % 360.0
+    de_gate, de_line = longitude_to_gate_and_line(d_earth_lon)
+    design_gates["Earth"] = {"gate": de_gate, "line": de_line, "longitude": d_earth_lon}
+    
+    d_nn_lon = design_gates["North Node"]["longitude"]
+    d_sn_lon = (d_nn_lon + 180.0) % 360.0
+    dsn_gate, dsn_line = longitude_to_gate_and_line(d_sn_lon)
+    design_gates["South Node"] = {"gate": dsn_gate, "line": dsn_line, "longitude": d_sn_lon}
+    
+    # Calculate Active Channels
+    all_active_gates = set(
+        [v["gate"] for v in personality_gates.values()] + [v["gate"] for v in design_gates.values()]
+    )
+    
+    defined_channels = []
+    for (g1, g2), channel_name in CHANNELS_MAP.items():
+        if g1 in all_active_gates and g2 in all_active_gates:
+            defined_channels.append(f"Channel {g1}-{g2}: {channel_name}")
+            
     return {
-        "Goal (Highest Potential)": goal_energy,
-        "Obstacle (Karmic Block)": obstacle_energy,
-        "Solution (How to Overcome)": solution_energy
+        "personality": personality_gates,
+        "design": design_gates,
+        "channels": defined_channels
     }
 
 # ==========================================
-# 5. EXPANDED READABLE PDF GENERATOR
+# 3. PDF GENERATION ENGINE
 # ==========================================
-def generate_pdf(results):
-    buffer = BytesIO()
+
+def generate_pdf_report(user_name, dob_str, matrix, hd_data=None):
+    """Generates multi-page PDF report incorporating Matrix and Human Design data."""
+    buffer = io.BytesIO()
     doc = SimpleDocTemplate(
-        buffer, 
-        pagesize=letter, 
-        rightMargin=40, 
-        leftMargin=40, 
-        topMargin=40, 
+        buffer,
+        pagesize=letter,
+        rightMargin=40,
+        leftMargin=40,
+        topMargin=40,
         bottomMargin=40
     )
-    styles = getSampleStyleSheet()
     
-    # Custom Palette & Typography
-    title_style = ParagraphStyle('DocTitle', parent=styles['Heading1'], fontSize=22, leading=26, spaceAfter=8, textColor=colors.HexColor("#1A252C"))
-    subtitle_style = ParagraphStyle('DocSub', parent=styles['Normal'], fontSize=10, leading=14, spaceAfter=12, textColor=colors.HexColor("#555555"))
-    section_heading = ParagraphStyle('SecHead', parent=styles['Heading2'], fontSize=14, leading=18, spaceBefore=14, spaceAfter=8, textColor=colors.HexColor("#2C3E50"))
-    position_title = ParagraphStyle('PosTitle', parent=styles['Heading3'], fontSize=11, leading=14, spaceBefore=6, spaceAfter=2, textColor=colors.HexColor("#16A085"))
-    body_text = ParagraphStyle('Body', parent=styles['Normal'], fontSize=9.5, leading=13.5, spaceAfter=4)
-    italic_note = ParagraphStyle('Note', parent=styles['Italic'], fontSize=8.5, leading=11, spaceAfter=6, textColor=colors.HexColor("#666666"))
-
-    elements = []
-
-    # Header
-    elements.append(Paragraph("MetaMatrix Destiny — Comprehensive Soul Analysis", title_style))
-    elements.append(Paragraph("Personalized Energetic Blueprint, Ancestral Mapping & Destiny Timeline", subtitle_style))
-    elements.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor("#2C3E50"), spaceAfter=14))
-
-    # 1. Life Purpose Synthesis
-    elements.append(Paragraph("1. Life Purpose & Breakthrough Synthesis", section_heading))
-    elements.append(Paragraph("This synthesis outlines your highest aspiration, the primary energetic friction keeping you from it, and the golden key needed to unlock balance.", body_text))
-    elements.append(Spacer(1, 4))
-
-    synthesis = calculate_life_synthesis(results)
-    for label, val in synthesis.items():
-        desc = ENERGY_DESCRIPTIONS.get(val, "")
-        elements.append(Paragraph(f"<b>{label}:</b> Energy {val}", position_title))
-        elements.append(Paragraph(desc, body_text))
-        elements.append(Spacer(1, 2))
-
-    elements.append(Spacer(1, 10))
-
-    # 2. Core Matrix Energies
-    elements.append(Paragraph("2. Core Matrix Energies", section_heading))
-    for pos, val in results['core'].items():
-        pos_expl = POSITION_EXPLANATIONS.get(pos, "")
-        energy_desc = ENERGY_DESCRIPTIONS.get(val, "")
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'DocTitle',
+        parent=styles['Title'],
+        fontSize=24,
+        textColor=colors.HexColor('#2C3E50'),
+        spaceAfter=15
+    )
+    h2_style = ParagraphStyle(
+        'H2Style',
+        parent=styles['Heading2'],
+        fontSize=16,
+        textColor=colors.HexColor('#2C3E50'),
+        spaceBefore=15,
+        spaceAfter=10
+    )
+    body_style = ParagraphStyle(
+        'BodyStyle',
+        parent=styles['Normal'],
+        fontSize=10,
+        leading=14,
+        textColor=colors.HexColor('#333333')
+    )
+    
+    story = []
+    
+    # Title & Header
+    story.append(Paragraph("MetaMatrix Destiny & Human Design Analysis", title_style))
+    story.append(Paragraph(f"<b>Client Profile:</b> {user_name} | <b>Birth Info:</b> {dob_str}", body_style))
+    story.append(Spacer(1, 15))
+    
+    # Section 1: Core Matrix Nodes
+    story.append(Paragraph("1. Core Matrix Archetypes", h2_style))
+    table_data = [["Position", "Arcana #", "Archetype Title", "Core Manifestation Theme"]]
+    
+    core_positions = ["Crown", "Karma", "Talent", "Base", "Soul"]
+    for pos in core_positions:
+        val = matrix[pos]
+        arch = ARCHETYPES[val]
+        table_data.append([pos, str(val), arch['title'], arch['theme']])
         
-        elements.append(Paragraph(f"<b>{pos}</b> — Energy {val}", position_title))
-        elements.append(Paragraph(f"<i>Position Meaning:</i> {pos_expl}", italic_note))
-        elements.append(Paragraph(f"<i>Active Archetype:</i> {energy_desc}", body_text))
-        elements.append(Spacer(1, 4))
-
-    # Page Break for clean reading structure
-    elements.append(PageBreak())
-
-    # 3. Ancestral Lineage Channels
-    elements.append(Paragraph("3. Ancestral Lineage Channels", section_heading))
-    elements.append(Paragraph("Your matrix contains two major diagonal channels carrying genetic and spiritual information passed down through bloodlines.", body_text))
-    elements.append(Spacer(1, 4))
-
-    for line_pos, val in results['ancestral_raw'].items():
-        energy_desc = ENERGY_DESCRIPTIONS.get(val, "")
-        elements.append(Paragraph(f"<b>{line_pos}</b> — Energy {val}", position_title))
-        elements.append(Paragraph(f"<i>Active Archetype:</i> {energy_desc}", body_text))
-        elements.append(Spacer(1, 4))
-
-    elements.append(Spacer(1, 8))
-
-    # 4. Destiny Purposes Timeline
-    elements.append(Paragraph("4. Destiny Purpose Timeline", section_heading))
-    for dest_pos, val in results['destiny'].items():
-        pos_expl = POSITION_EXPLANATIONS.get(dest_pos, "")
-        energy_desc = ENERGY_DESCRIPTIONS.get(val, "")
+    t = Table(table_data, colWidths=[80, 50, 150, 250])
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#2C3E50')),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.lightgrey),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('VALIGN', (0,0), (-1,-1), 'TOP'),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor('#F8F9FA')])
+    ]))
+    story.append(t)
+    story.append(Spacer(1, 15))
+    
+    # Section 2: Lineage Channels & Purpose Eras
+    story.append(Paragraph("2. Lineage Channels & Destiny Eras", h2_style))
+    lineage_data = [
+        ["Lineage / Era", "Arcana #", "Archetype", "Strategic Focus"],
+        ["Paternal Strength", str(matrix['Paternal_Strength']), ARCHETYPES[matrix['Paternal_Strength']]['title'], ARCHETYPES[matrix['Paternal_Strength']]['theme']],
+        ["Paternal Karma", str(matrix['Paternal_Karma']), ARCHETYPES[matrix['Paternal_Karma']]['title'], ARCHETYPES[matrix['Paternal_Karma']]['shadow']],
+        ["Maternal Strength", str(matrix['Maternal_Strength']), ARCHETYPES[matrix['Maternal_Strength']]['title'], ARCHETYPES[matrix['Maternal_Strength']]['theme']],
+        ["Maternal Karma", str(matrix['Maternal_Karma']), ARCHETYPES[matrix['Maternal_Karma']]['title'], ARCHETYPES[matrix['Maternal_Karma']]['shadow']],
+        ["Era 20-40 Purpose", str(matrix['Era_20_40']), ARCHETYPES[matrix['Era_20_40']]['title'], ARCHETYPES[matrix['Era_20_40']]['theme']],
+        ["Era 40-60 Purpose", str(matrix['Era_40_60']), ARCHETYPES[matrix['Era_40_60']]['title'], ARCHETYPES[matrix['Era_40_60']]['theme']],
+        ["Spiritual Mission", str(matrix['Spiritual_Purpose']), ARCHETYPES[matrix['Spiritual_Purpose']]['title'], ARCHETYPES[matrix['Spiritual_Purpose']]['theme']]
+    ]
+    
+    t2 = Table(lineage_data, colWidths=[120, 50, 140, 220])
+    t2.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#34495E')),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.lightgrey),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('VALIGN', (0,0), (-1,-1), 'TOP'),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor('#F8F9FA')])
+    ]))
+    story.append(t2)
+    
+    # Section 3: Human Design Gates (if calculated)
+    if hd_data:
+        story.append(PageBreak())
+        story.append(Paragraph("3. Human Design Planetary Gates", h2_style))
         
-        elements.append(Paragraph(f"<b>{dest_pos}</b> — Energy {val}", position_title))
-        elements.append(Paragraph(f"<i>Timeline Meaning:</i> {pos_expl}", italic_note))
-        elements.append(Paragraph(f"<i>Guiding Energy:</i> {energy_desc}", body_text))
-        elements.append(Spacer(1, 4))
-
-    elements.append(Spacer(1, 8))
-
-    # 5. Chakra Energy Alignment Map
-    elements.append(Paragraph("5. Chakra Energy Alignment Map", section_heading))
-    elements.append(Paragraph("Shows how your core energies map across your physical and energetic centers:", body_text))
-    elements.append(Spacer(1, 4))
-
-    for ch_name, val in results['chakra'].items():
-        energy_desc = ENERGY_DESCRIPTIONS.get(val, "")
-        elements.append(Paragraph(f"<b>{ch_name}:</b> Energy {val}", position_title))
-        elements.append(Paragraph(f"<i>Expression:</i> {energy_desc}", body_text))
-
-    # Footer
-    elements.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#CCCCCC"), spaceBefore=16, spaceAfter=8))
-    elements.append(Paragraph("Generated via MetaMatrix Destiny Engine • All Rights Reserved", italic_note))
-
-    doc.build(elements)
+        # Channels
+        if hd_data['channels']:
+            story.append(Paragraph("<b>Defined Channels:</b>", body_style))
+            for ch in hd_data['channels']:
+                story.append(Paragraph(f"• {ch}", body_style))
+            story.append(Spacer(1, 10))
+            
+        gate_rows = [["Planet", "Conscious Gate", "Unconscious Gate"]]
+        planets = ["Sun", "Earth", "Moon", "North Node", "South Node", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"]
+        
+        for p in planets:
+            p_info = hd_data['personality'].get(p, {})
+            d_info = hd_data['design'].get(p, {})
+            
+            p_str = f"Gate {p_info.get('gate','-')}.{p_info.get('line','-')}"
+            d_str = f"Gate {d_info.get('gate','-')}.{d_info.get('line','-')}"
+            gate_rows.append([p, p_str, d_str])
+            
+        t_hd = Table(gate_rows, colWidths=[120, 180, 180])
+        t_hd.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#27AE60')),
+            ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.lightgrey),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor('#F8F9FA')])
+        ]))
+        story.append(t_hd)
+        
+    doc.build(story)
     buffer.seek(0)
     return buffer
 
 # ==========================================
-# 6. USER INPUT & APPLICATION UI
+# 4. STREAMLIT APPLICATION INTERFACE
 # ==========================================
-st.markdown("### 🗓️ Enter Birth Information")
-col1, col2, col3 = st.columns(3)
 
-with col1:
-    day = st.number_input("Day of Birth", min_value=1, max_value=31, value=19)
-with col2:
-    month = st.number_input("Month of Birth", min_value=1, max_value=12, value=12)
-with col3:
-    year = st.number_input("Year of Birth", min_value=1900, max_value=2100, value=1978)
+st.set_page_config(page_title="MetaMatrix Destiny & Human Design", layout="wide")
 
-if st.button("Calculate Matrix & Generate Reading", type="primary"):
-    st.session_state['results'] = calculate_full_matrix(day, month, year)
+st.title("🌌 MetaMatrix Destiny & Human Design Analysis")
+st.markdown("---")
 
-if 'results' in st.session_state:
-    res = st.session_state['results']
-    st.markdown("---")
+# Sidebar Configuration
+st.sidebar.header("📋 Client Input Profile")
+user_name = st.sidebar.text_input("Full Name", value="Princess Jasmine")
+birth_date = st.sidebar.date_input("Birth Date", datetime.date(1978, 12, 19))
+birth_time = st.sidebar.time_input("Exact Birth Time", datetime.time(16, 58))
+utc_offset = st.sidebar.number_input("UTC Offset (Hours)", min_value=-12.0, max_value=14.0, value=-5.0, step=0.5, help="e.g. -5 for EST, -6 for CST")
 
-    # Life Purpose Synthesis
-    st.markdown("### 🎯 Life Purpose & Breakthrough Synthesis")
-    synthesis = calculate_life_synthesis(res)
+enable_hd = st.sidebar.checkbox("Calculate Human Design Gates", value=True)
+
+# Calculate Matrix
+matrix = calculate_core_matrix(birth_date.day, birth_date.month, birth_date.year)
+
+# Calculate HD Gates if enabled
+hd_data = None
+if enable_hd:
+    try:
+        hd_data = calculate_human_design_gates(
+            birth_date.year, birth_date.month, birth_date.day,
+            birth_time.hour, birth_time.minute, utc_offset
+        )
+    except Exception as e:
+        st.sidebar.error(f"HD Ephemeris Error: {e}")
+
+# UI Tabs
+tabs = st.tabs(["🏛️ Core Matrix Nodes", "🧬 Human Design Gates", "🌿 Lineage & Destiny", "📖 Archetype Dictionary", "📄 PDF Generator"])
+
+# TAB 1: CORE MATRIX
+with tabs[0]:
+    st.subheader("Core Personal Matrix Alignments")
+    c1, c2, c3, c4, c5 = st.columns(5)
     
-    syn_col1, syn_col2, syn_col3 = st.columns(3)
-    with syn_col1:
-        g_val = synthesis["Goal (Highest Potential)"]
-        st.info(f"**Goal (Highest Potential)**\n\n**Energy {g_val}**\n\n_{ENERGY_DESCRIPTIONS.get(g_val, '')}_")
-    with syn_col2:
-        o_val = synthesis["Obstacle (Karmic Block)"]
-        st.error(f"**Obstacle (Karmic Block)**\n\n**Energy {o_val}**\n\n_{ENERGY_DESCRIPTIONS.get(o_val, '')}_")
-    with syn_col3:
-        s_val = synthesis["Solution (How to Overcome)"]
-        st.success(f"**Solution (How to Overcome)**\n\n**Energy {s_val}**\n\n_{ENERGY_DESCRIPTIONS.get(s_val, '')}_")
+    positions = [("Crown", "Crown (Mind)"), ("Karma", "Karma (Emotional)"), ("Talent", "Talent (Skills)"), ("Base", "Base (Physical)"), ("Soul", "Soul Purpose")]
+    cols = [c1, c2, c3, c4, c5]
+    
+    for (key, label), col in zip(positions, cols):
+        val = matrix[key]
+        arch = ARCHETYPES[val]
+        with col:
+            st.metric(label=label, value=f"{val} - {arch['title']}")
+            st.caption(f"**Theme:** {arch['theme']}")
+            st.caption(f"**Shadow:** {arch['shadow']}")
 
-    st.markdown("---")
+# TAB 2: HUMAN DESIGN GATES
+with tabs[1]:
+    st.subheader("Human Design Gate Imprints (Swiss Ephemeris)")
+    
+    if hd_data:
+        if hd_data['channels']:
+            st.success("### ⚡ Active Defined Channels")
+            for ch in hd_data['channels']:
+                st.markdown(f"* **{ch}**")
+            st.markdown("---")
+            
+        col_p, col_d = st.columns(2)
+        
+        with col_p:
+            st.markdown("### 🖤 Personality (Conscious Mind)")
+            for planet, p_data in hd_data['personality'].items():
+                st.write(f"**{planet}:** Gate **{p_data['gate']}**, Line **{p_data['line']}**")
+                
+        with col_d:
+            st.markdown("### 🔴 Design (Unconscious Body)")
+            for planet, d_data in hd_data['design'].items():
+                st.write(f"**{planet}:** Gate **{d_data['gate']}**, Line **{d_data['line']}**")
+    else:
+        st.info("Enable Human Design Gates in the sidebar to view planetary gate coordinates.")
 
-    # Detailed Interactive View Tabs
-    tab1, tab2, tab3, tab4 = st.tabs([
-        "🔮 Core Energies", 
-        "🧬 Ancestral Lines", 
-        "⏳ Destiny Eras", 
-        "🌈 Chakra Map"
-    ])
+# TAB 3: LINEAGE & DESTINY
+with tabs[2]:
+    st.subheader("Ancestral Lineage & Destiny Eras")
+    
+    col_a, col_b = st.columns(2)
+    with col_a:
+        st.markdown("### 🧬 Ancestral Lineage Channels")
+        st.write(f"**Paternal Strength:** #{matrix['Paternal_Strength']} — {ARCHETYPES[matrix['Paternal_Strength']]['title']}")
+        st.write(f"**Paternal Karma:** #{matrix['Paternal_Karma']} — {ARCHETYPES[matrix['Paternal_Karma']]['title']}")
+        st.write(f"**Maternal Strength:** #{matrix['Maternal_Strength']} — {ARCHETYPES[matrix['Maternal_Strength']]['title']}")
+        st.write(f"**Maternal Karma:** #{matrix['Maternal_Karma']} — {ARCHETYPES[matrix['Maternal_Karma']]['title']}")
+        
+    with col_b:
+        st.markdown("### ⏳ Destiny Eras")
+        st.write(f"**Era 20–40:** #{matrix['Era_20_40']} — {ARCHETYPES[matrix['Era_20_40']]['title']}")
+        st.write(f"**Era 40–60:** #{matrix['Era_40_60']} — {ARCHETYPES[matrix['Era_40_60']]['title']}")
+        st.write(f"**Spiritual Purpose:** #{matrix['Spiritual_Purpose']} — {ARCHETYPES[matrix['Spiritual_Purpose']]['title']}")
 
-    with tab1:
-        st.subheader("Core Matrix Pillars")
-        for k, v in res['core'].items():
-            with st.container():
-                st.markdown(f"#### **{k}** — Energy {v}")
-                st.caption(f"**Position Role:** {POSITION_EXPLANATIONS.get(k, '')}")
-                st.write(ENERGY_DESCRIPTIONS.get(v, ""))
-                st.markdown("---")
+# TAB 4: ARCHETYPE DICTIONARY
+with tabs[3]:
+    st.subheader("The 22 Major Arcana Archetype Dictionary")
+    for num, details in ARCHETYPES.items():
+        with st.expander(f"Arcana {num}: {details['title']}"):
+            st.write(f"**Theme:** {details['theme']}")
+            st.write(f"**Shadow / Growth Area:** {details['shadow']}")
 
-    with tab2:
-        st.subheader("Ancestral Bloodline Channels")
-        for k, v in res['ancestral_raw'].items():
-            with st.container():
-                st.markdown(f"#### **{k}** — Energy {v}")
-                st.write(ENERGY_DESCRIPTIONS.get(v, ""))
-                st.markdown("---")
-
-    with tab3:
-        st.subheader("Destiny Eras & Lifetime Purpose")
-        for k, v in res['destiny'].items():
-            with st.container():
-                st.markdown(f"#### **{k}** — Energy {v}")
-                st.caption(f"**Timeline Context:** {POSITION_EXPLANATIONS.get(k, '')}")
-                st.write(ENERGY_DESCRIPTIONS.get(v, ""))
-                st.markdown("---")
-
-    with tab4:
-        st.subheader("Chakra Energy Map")
-        for k, v in res['chakra'].items():
-            st.markdown(f"**{k}** (Energy {v}): _{ENERGY_DESCRIPTIONS.get(v, '')}_")
-
-    st.markdown("---")
-
-    # PDF Generator Action Button
-    pdf_data = generate_pdf(res)
-    st.download_button(
-        label="📄 Download Complete Detailed PDF Report",
-        data=pdf_data,
-        file_name="MetaMatrix_Destiny_Comprehensive_Analysis.pdf",
-        mime="application/pdf"
-    )
+# TAB 5: PDF GENERATOR
+with tabs[4]:
+    st.subheader("Export Complete Profile PDF")
+    st.write("Generate a formatted multi-page PDF document combining your MetaMatrix Nodes and Human Design Gate map.")
+    
+    dob_formatted = f"{birth_date.strftime('%B %d, %Y')} at {birth_time.strftime('%I:%M %p')}"
+    
+    if st.button("Generate Comprehensive PDF Report"):
+        pdf_bytes = generate_pdf_report(user_name, dob_formatted, matrix, hd_data)
+        st.download_button(
+            label="💾 Download PDF Analysis Report",
+            data=pdf_bytes,
+            file_name=f"{user_name.replace(' ', '_')}_MetaMatrix_Analysis.pdf",
+            mime="application/pdf"
+        )
