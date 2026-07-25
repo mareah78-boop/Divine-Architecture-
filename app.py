@@ -155,7 +155,41 @@ def generate_full_pdf(matrix_data):
 
 st.set_page_config(page_title="MetaMatrix Destiny", page_icon="✨", layout="wide")
 st.title("✨ METAMATRIX DESTINY ✨")
+# Instructions & Overview Section
+with st.expander("📖 **How to Use & What This Analysis Means**", expanded=True):
+    st.markdown("""
+    ### Welcome to MetaMatrix Destiny
+    This tool calculates your unique energy blueprint based on the ancient **Destination Matrix** system, combining numerology and sacred geometry to map your core life energies, inherited ancestral patterns, and spiritual evolution.
 
+    ---
+
+    ### 🔮 How to Get Started:
+    1. **Enter Your Birthdate:** Select your exact Day, Month, and Year of birth using the inputs below.
+    2. **Calculate Your Matrix:** Click the **Calculate Matrix** button to process your blueprint.
+    3. **Explore Your Energies:** Review your Core, Ancestral, Destiny, and Chakra maps directly on screen.
+    4. **Download Your Report:** Click the **Download Complete Detailed PDF Report** button at the bottom to save your full analysis as a document.
+
+    ---
+
+    ### 🧬 Understanding Your Results:
+    * **Core Energies:** 
+      * **Top (Crown):** Your spiritual connection and highest personal aspirations.
+      * **Left (Karma):** Lessons carried into this life and primary personal challenges.
+      * **Right (Talent):** Inherent strengths, natural gifts, and creative potential.
+      * **Bottom (Base/Karmic Tail):** Unconscious patterns to transform and ground in this lifetime.
+      * **Center (Soul):** The heart of your identity—what brings your soul comfort and alignment.
+    
+    * **Ancestral Lineage Channels:**
+      * **Father & Mother Lines:** Inherited gifts, strengths, and energetic dynamics passed down through your maternal and paternal bloodlines.
+
+    * **Destiny Purposes:**
+      * **Personal Destiny (Ages 20–40):** Your focus on self-mastery and personal growth.
+      * **Social Destiny (Ages 40–60):** Your impact on society, community, and those around you.
+      * **Spiritual Purpose:** Your overall lifetime synthesis and soul mission.
+
+    * **Chakra Energy Map:**
+      * Shows how these core numbers align across your seven primary energy centers, highlighting where your energy flows naturally and where attention is needed.
+    """)
 # Sidebar Navigation
 view_mode = st.sidebar.radio("Navigation", ["Matrix Generator", "Code Database Interface"])
 
