@@ -1,5 +1,12 @@
 import streamlit as st
 import datetime
+import io
+
+# ReportLab Imports for PDF Generation
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
 
 # Try importing pyswisseph safely for Streamlit Cloud deployment
 try:
@@ -10,13 +17,41 @@ except ImportError:
 
 # Set page configuration
 st.set_page_config(
-    page_title="MetaMatrix Destiny & Human Design",
+    page_title="MetaMatrix Destiny & Quantum Portal",
     page_icon="🧬",
     layout="wide"
 )
 
 # ==============================================================================
-# 1. MANIFESTATION / GRABOVOI CODES DATA
+# 1. 22 ARCANA INTERPRETATION DICTIONARY
+# ==============================================================================
+ARCANA_DESCRIPTIONS = {
+    1: {"title": "The Magician / The Pioneer", "energy": "Manifestation, Resourcefulness, Creation, New Beginnings"},
+    2: {"title": "The High Priestess / Intuition", "energy": "Duality, Secret Knowledge, Subconscious, Inner Wisdom"},
+    3: {"title": "The Empress / Abundance", "energy": "Fertility, Creation, Nurturing, Material Success"},
+    4: {"title": "The Emperor / Authority", "energy": "Structure, Stability, Leadership, Mastery of Domain"},
+    5: {"title": "The Hierophant / The Teacher", "energy": "Tradition, Spiritual Truth, Mentorship, Wisdom Transmission"},
+    6: {"title": "The Lovers / Harmony", "energy": "Choice, Relationships, Alignment of Values, Partnership"},
+    7: {"title": "The Chariot / Victory", "energy": "Willpower, Motion, Overcoming Obstacles, Focus"},
+    8: {"title": "Justice / Equilibrium", "energy": "Karma, Balance, Truth, Cause and Effect"},
+    9: {"title": "The Hermit / Wisdom", "energy": "Soul-Searching, Introspection, Inner Guidance, Expertise"},
+    10: {"title": "Wheel of Fortune / Destiny Flow", "energy": "Cycles, Good Luck, Adaptation, Turning Points"},
+    11: {"title": "Strength / Inner Power", "energy": "Courage, Compassion, Resilience, Passion Control"},
+    12: {"title": "The Hanged Man / Perspective", "energy": "Pause, Surrender, New Enlightenment, Service"},
+    13: {"title": "Death / Transformation", "energy": "Rebirth, Endings, Deep Evolution, Letting Go"},
+    14: {"title": "Temperance / Alchemy", "energy": "Balance, Moderation, Flow, Higher Integration"},
+    15: {"title": "The Devil / Shadow Alchemy", "energy": "Material Mastery, Unmasking Illusions, Freedom from Ties"},
+    16: {"title": "The Tower / Breakthrough", "energy": "Sudden Awakening, Rebuilding, Breaking Chains"},
+    17: {"title": "The Star / Higher Guidance", "energy": "Hope, Inspiration, Spiritual Purpose, Radiance"},
+    18: {"title": "The Moon / Subconscious", "energy": "Intuition, Astral Realm, Overcoming Fear, Hidden Potential"},
+    19: {"title": "The Sun / Radiant Success", "energy": "Joy, Leadership, Abundance, Vitality, Visibility"},
+    20: {"title": "Judgement / Karma Clearance", "energy": "Family Healing, Awakening, Calling, Renewal"},
+    21: {"title": "The World / Completion", "energy": "Wholeness, Global Connection, Fulfilment, Universal Success"},
+    22: {"title": "The Fool / Infinite Potential", "energy": "Trust, Pure Potential, Freedom, Spiritual Journey"},
+}
+
+# ==============================================================================
+# 2. MANIFESTATION / GRABOVOI CODES DATA
 # ==============================================================================
 MANIFESTATION_CODES = {
     "Money": {
@@ -78,7 +113,7 @@ MANIFESTATION_CODES = {
 }
 
 # ==============================================================================
-# 2. DESTINY MATRIX CALCULATION HELPERS
+# 3. DESTINY MATRIX CALCULATION HELPERS
 # ==============================================================================
 def reduce_arcana(val: int) -> int:
     """Reduces numbers greater than 22 by summing their digits until <= 22."""
@@ -99,10 +134,10 @@ def calculate_destiny_matrix(dob: datetime.date):
     E = reduce_arcana(A + B + C + D)  # Center/Comfort zone
     
     # Ancestral Cross
-    F = reduce_arcana(A + B)  # Top-left (Father line)
-    G = reduce_arcana(B + C)  # Top-right (Mother line)
-    H = reduce_arcana(C + D)  # Bottom-right
-    I = reduce_arcana(D + A)  # Bottom-left
+    F = reduce_arcana(A + B)  # Father Top-Left
+    G = reduce_arcana(B + C)  # Mother Top-Right
+    H = reduce_arcana(C + D)  # Ancestral Bottom-Right
+    I = reduce_arcana(D + A)  # Ancestral Bottom-Left
     
     # Destinies
     sky = reduce_arcana(B + D)
@@ -133,18 +168,65 @@ def calculate_destiny_matrix(dob: datetime.date):
     }
 
 # ==============================================================================
-# 3. INTERFACE & NAVIGATION
+# 4. REPORTLAB PDF GENERATOR FUNCTION
+# ==============================================================================
+def generate_matrix_pdf(name, dob, matrix_data):
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=36, leftMargin=36, topMargin=36, bottomMargin=36)
+    story = []
+    
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('TitleStyle', parent=styles['Heading1'], fontSize=20, textColor=colors.HexColor("#4A154B"), spaceAfter=12)
+    heading_style = ParagraphStyle('HeadingStyle', parent=styles['Heading2'], fontSize=14, textColor=colors.HexColor("#1D1C1D"), spaceAfter=8)
+    body_style = ParagraphStyle('BodyStyle', parent=styles['Normal'], fontSize=10, leading=14, spaceAfter=6)
+    
+    # Header
+    story.append(Paragraph(f"MetaMatrix Destiny Profile: {name}", title_style))
+    story.append(Paragraph(f"<b>Date of Birth:</b> {dob.strftime('%B %d, %Y')}", body_style))
+    story.append(Spacer(1, 12))
+    
+    # Matrix Table Data
+    table_data = [["Node / Position", "Arcana Code", "Archetype Title", "Core Energy Essence"]]
+    for key, val in matrix_data.items():
+        arcana_info = ARCANA_DESCRIPTIONS.get(val, {"title": "Unknown", "energy": "Custom Energy"})
+        table_data.append([
+            key, 
+            str(val), 
+            arcana_info["title"], 
+            arcana_info["energy"]
+        ])
+        
+    t = Table(table_data, colWidths=[150, 60, 150, 180])
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#4A154B")),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#CCCCCC")),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+    ]))
+    
+    story.append(t)
+    doc.build(story)
+    buffer.seek(0)
+    return buffer
+
+# ==============================================================================
+# 5. STREAMLIT INTERFACE & ROUTING
 # ==============================================================================
 st.title("🧬 MetaMatrix Destiny & Quantum Portal")
 
 tab1, tab2, tab3 = st.tabs(["🔮 Destiny Matrix Engine", "✨ Manifestation Codes", "🪐 Human Design / Ephemeris"])
 
 # ------------------------------------------------------------------------------
-# TAB 1: DESTINY MATRIX
+# TAB 1: DESTINY MATRIX ENGINE
 # ------------------------------------------------------------------------------
 with tab1:
     st.header("Destiny Matrix Calculator")
-    st.write("Enter birth details to generate the core energy nodes and destiny points.")
+    st.write("Enter birth details to calculate core energy nodes, ancestral lines, and download the full analysis PDF.")
     
     col_input1, col_input2 = st.columns(2)
     with col_input1:
@@ -152,18 +234,32 @@ with tab1:
     with col_input2:
         dob_input = st.date_input("Date of Birth", value=datetime.date(1985, 1, 1), min_value=datetime.date(1900, 1, 1))
         
-    if st.button("Calculate Matrix", type="primary"):
-        matrix_results = calculate_destiny_matrix(dob_input)
-        
-        st.subheader(f"✨ Destiny Matrix Profile for {name_input}")
-        
-        col_res1, col_res2, col_res3 = st.columns(3)
-        
-        keys = list(matrix_results.keys())
-        for idx, key in enumerate(keys):
-            target_col = [col_res1, col_res2, col_res3][idx % 3]
-            with target_col:
-                st.metric(label=key, value=f"Arcana {matrix_results[key]}")
+    matrix_results = calculate_destiny_matrix(dob_input)
+    
+    st.markdown("---")
+    st.subheader(f"✨ Destiny Matrix Profile for {name_input}")
+    
+    # Display Core Metrics
+    col_res1, col_res2, col_res3 = st.columns(3)
+    keys = list(matrix_results.keys())
+    for idx, key in enumerate(keys):
+        target_col = [col_res1, col_res2, col_res3][idx % 3]
+        arc_val = matrix_results[key]
+        arc_title = ARCANA_DESCRIPTIONS.get(arc_val, {}).get("title", "")
+        with target_col:
+            st.metric(label=key, value=f"Arcana {arc_val}", delta=arc_title)
+
+    st.markdown("---")
+    
+    # Generate and Download PDF Report
+    pdf_bytes = generate_matrix_pdf(name_input, dob_input, matrix_results)
+    st.download_button(
+        label="📄 Download Complete PDF Blueprint Report",
+        data=pdf_bytes,
+        file_name=f"{name_input.replace(' ', '_')}_Destiny_Matrix_Report.pdf",
+        mime="application/pdf",
+        type="primary"
+    )
 
 # ------------------------------------------------------------------------------
 # TAB 2: MANIFESTATION CODES
@@ -194,4 +290,4 @@ with tab3:
     if HAS_SWISSEPH:
         st.success("Swiss Ephemeris (`pyswisseph`) module is compiled and ready for planetary calculations.")
     else:
-        st.warning("`pyswisseph` is loading or building in the environment.")
+        st.warning("`pyswisseph` build environment is active.")
