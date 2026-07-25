@@ -57,12 +57,13 @@ with st.expander("📖 **How to Use & What This Analysis Means**", expanded=True
     ### 🔮 How to Get Started:
     1. **Enter Your Birthdate:** Select your exact Day, Month, and Year of birth using the inputs below.
     2. **Calculate Your Matrix:** Click the **Calculate Matrix** button to process your blueprint.
-    3. **Explore Your Energies:** Review your Core, Ancestral, Destiny, and Chakra maps directly on screen.
+    3. **Explore Your Energies:** Review your Life Synthesis, Core, Ancestral, Destiny, and Chakra maps directly on screen.
     4. **Download Your Detailed Report:** Click the **Download Complete Detailed PDF Report** button to generate a PDF with full energy interpretations.
 
     ---
 
     ### 🧬 Key Sections Overview:
+    * **Life Purpose & Breakthrough Synthesis:** Highlights your higher goal, karmic block, and breakthrough solution.
     * **Core Matrix Energies:** Maps your primary Archetypes (Crown, Karma, Talent, Karmic Tail/Base, and Soul Center).
     * **Ancestral Lineage Channels:** Reveals inherited lineage energies along the Father and Mother diagonals.
     * **Destiny Purposes:** Breaks down your Personal (20–40), Social (40–60), and Lifetime Spiritual purpose.
@@ -73,14 +74,12 @@ with st.expander("📖 **How to Use & What This Analysis Means**", expanded=True
 # 4. CALCULATION ENGINE LOGIC
 # ==========================================
 def reduce_to_22(n):
-    """Reduces any integer to a number between 1 and 22 via digit summing if > 22."""
     n = abs(int(n))
     while n > 22:
         n = sum(int(digit) for digit in str(n))
     return n
 
 def calculate_full_matrix(day, month, year):
-    # Core Matrix Nodes
     top = reduce_to_22(day)
     left = reduce_to_22(month)
     year_sum = sum(int(d) for d in str(year))
@@ -88,18 +87,15 @@ def calculate_full_matrix(day, month, year):
     bottom = reduce_to_22(top + left + right)
     center = reduce_to_22(top + left + right + bottom)
     
-    # Ancestral Lineage Diagonals
     father_tl = reduce_to_22(top + left)
     father_br = reduce_to_22(right + bottom)
     mother_tr = reduce_to_22(top + right)
     mother_bl = reduce_to_22(left + bottom)
 
-    # Destiny Purposes
     personal_destiny = reduce_to_22(top + bottom)
     social_destiny = reduce_to_22(left + right)
     spiritual_destiny = reduce_to_22(personal_destiny + social_destiny)
 
-    # Chakra Energy Alignment
     sahasrara = reduce_to_22(top + left)
     ajna = reduce_to_22(top + center)
     vishuddha = reduce_to_22(left + center)
@@ -136,6 +132,18 @@ def calculate_full_matrix(day, month, year):
         }
     }
 
+def calculate_life_synthesis(res):
+    goal_energy = res['core']['Crown / Top Energy']
+    obstacle_energy = res['core']['Left / Karma']
+    center_energy = res['core']['Center / Soul']
+    solution_energy = reduce_to_22(obstacle_energy + center_energy)
+    
+    return {
+        "Goal (Highest Potential)": goal_energy,
+        "Obstacle (Karmic Block)": obstacle_energy,
+        "Solution (How to Overcome)": solution_energy
+    }
+
 # ==========================================
 # 5. DETAILED PDF REPORT GENERATOR
 # ==========================================
@@ -151,7 +159,6 @@ def generate_pdf(results):
     )
     styles = getSampleStyleSheet()
     
-    # Typography Styles
     title_style = ParagraphStyle('TitleStyle', parent=styles['Heading1'], fontSize=20, leading=24, spaceAfter=10, textColor=colors.HexColor("#1A1A1A"))
     heading_style = ParagraphStyle('HeadingStyle', parent=styles['Heading2'], fontSize=13, leading=16, spaceBefore=12, spaceAfter=6, textColor=colors.HexColor("#2C3E50"))
     label_style = ParagraphStyle('LabelStyle', parent=styles['Normal'], fontSize=10, leading=14, spaceAfter=2)
@@ -159,11 +166,9 @@ def generate_pdf(results):
 
     elements = []
 
-    # Document Header
     elements.append(Paragraph("MetaMatrix Destiny - Detailed Personal Analysis", title_style))
     elements.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#CCCCCC"), spaceAfter=12))
 
-    # Helper function to append detailed sections
     def append_section(title, data_dict):
         elements.append(Paragraph(title, heading_style))
         for label, val in data_dict.items():
@@ -172,22 +177,20 @@ def generate_pdf(results):
                 elements.append(Paragraph(f"└ <i>{ENERGY_DESCRIPTIONS[val]}</i>", desc_style))
         elements.append(Spacer(1, 6))
 
-    # Core Energies Section
-    append_section("1. Core Matrix Energies", results['core'])
+    # Add Synthesis First in PDF for impact
+    synthesis_data = calculate_life_synthesis(results)
+    append_section("1. Life Purpose & Breakthrough Synthesis", synthesis_data)
 
-    # Ancestral Channels Section
-    elements.append(Paragraph("2. Ancestral Lineage Channels", heading_style))
+    append_section("2. Core Matrix Energies", results['core'])
+
+    elements.append(Paragraph("3. Ancestral Lineage Channels", heading_style))
     for line, numbers in results['ancestral'].items():
         elements.append(Paragraph(f"<b>{line}:</b> {numbers}", label_style))
     elements.append(Spacer(1, 6))
 
-    # Destiny Purposes Section
-    append_section("3. Destiny Purposes", results['destiny'])
+    append_section("4. Destiny Purposes", results['destiny'])
+    append_section("5. Chakra Energy Map", results['chakra'])
 
-    # Chakra Map Section
-    append_section("4. Chakra Energy Map", results['chakra'])
-
-    # Footer
     elements.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#CCCCCC"), spaceBefore=12, spaceAfter=8))
     elements.append(Paragraph("Generated via MetaMatrix Destiny Engine", desc_style))
 
@@ -212,6 +215,23 @@ if st.button("Calculate Matrix", type="primary"):
 
 if 'results' in st.session_state:
     res = st.session_state['results']
+    st.markdown("---")
+
+    # Life Purpose & Breakthrough Synthesis UI
+    st.markdown("### 🎯 Life Purpose & Breakthrough Synthesis")
+    synthesis = calculate_life_synthesis(res)
+    
+    syn_col1, syn_col2, syn_col3 = st.columns(3)
+    with syn_col1:
+        g_val = synthesis["Goal (Highest Potential)"]
+        st.info(f"**Goal (Highest Potential)**\n\nEnergy {g_val}\n\n_{ENERGY_DESCRIPTIONS.get(g_val, '')}_")
+    with syn_col2:
+        o_val = synthesis["Obstacle (Karmic Block)"]
+        st.error(f"**Obstacle (Karmic Block)**\n\nEnergy {o_val}\n\n_{ENERGY_DESCRIPTIONS.get(o_val, '')}_")
+    with syn_col3:
+        s_val = synthesis["Solution (How to Overcome)"]
+        st.success(f"**Solution (How to Overcome)**\n\nEnergy {s_val}\n\n_{ENERGY_DESCRIPTIONS.get(s_val, '')}_")
+
     st.markdown("---")
 
     col_a, col_b, col_c = st.columns(3)
@@ -240,7 +260,6 @@ if 'results' in st.session_state:
 
     st.markdown("---")
 
-    # PDF Download Button
     pdf_data = generate_pdf(res)
     st.download_button(
         label="📄 Download Complete Detailed PDF Report",
