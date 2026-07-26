@@ -10,10 +10,10 @@ from reportlab.lib import colors
 
 # Swiss Ephemeris Import (Safe Try)
 try:
-    import swisseph as swe
-    HAS_SWISSEPH = True
+    import ephem 
+    HAS_EPHEM = True
 except ImportError:
-    HAS_SWISSEPH = False
+    HAS_EPHEM = False
 
 # ==========================================
 # 1. PAGE CONFIGURATION & STYLING
@@ -233,27 +233,42 @@ def longitude_to_gate(longitude: float):
     return GATE_ORDER[gate_index], line
 
 def calculate_human_design_gates(dob: datetime.date, tob: datetime.time):
-    if not HAS_SWISSEPH:
+    if not HAS_EPHEM:
         return None
+        
     dt_conscious = datetime.datetime.combine(dob, tob)
-    jd_conscious = swe.julday(dt_conscious.year, dt_conscious.month, dt_conscious.day, 
-                              dt_conscious.hour + dt_conscious.minute / 60.0)
-    jd_unconscious = jd_conscious - 88.0
+    # Convert to ephem Date format
+    ephem_date_conscious = ephem.Date(dt_conscious)
+    ephem_date_unconscious = ephem.Date(dt_conscious - datetime.timedelta(days=88))
     
     planets = {
-        "Sun": swe.SUN, "Moon": swe.MOON, "Mercury": swe.MERCURY, 
-        "Venus": swe.VENUS, "Mars": swe.MARS, "Jupiter": swe.JUPITER, 
-        "Saturn": swe.SATURN, "Uranus": swe.URANUS, "Neptune": swe.NEPTUNE, "Pluto": swe.PLUTO
+        "Sun": ephem.Sun(),
+        "Moon": ephem.Moon(),
+        "Mercury": ephem.Mercury(),
+        "Venus": ephem.Venus(),
+        "Mars": ephem.Mars(),
+        "Jupiter": ephem.Jupiter(),
+        "Saturn": ephem.Saturn(),
+        "Uranus": ephem.Uranus(),
+        "Neptune": ephem.Neptune(),
+        "Pluto": ephem.Pluto()
     }
     
     conscious_gates, unconscious_gates = {}, {}
-    for p_name, p_code in planets.items():
-        res_c = swe.calc_ut(jd_conscious, p_code)[0][0]
-        conscious_gates[p_name] = longitude_to_gate(res_c)
-        res_u = swe.calc_ut(jd_unconscious, p_code)[0][0]
-        unconscious_gates[p_name] = longitude_to_gate(res_u)
+    
+    for p_name, p_obj in planets.items():
+        # Conscious
+        p_obj.compute(ephem_date_conscious)
+        ecl_long_c = float(ephem.Ecliptic(p_obj).lon) * (180.0 / 3.141592653589793)
+        conscious_gates[p_name] = longitude_to_gate(ecl_long_c)
+        
+        # Unconscious
+        p_obj.compute(ephem_date_unconscious)
+        ecl_long_u = float(ephem.Ecliptic(p_obj).lon) * (180.0 / 3.141592653589793)
+        unconscious_gates[p_name] = longitude_to_gate(ecl_long_u)
         
     return {"conscious": conscious_gates, "unconscious": unconscious_gates}
+
 
 # ==========================================
 # 6. EXPANDED READABLE PDF GENERATOR
@@ -448,8 +463,8 @@ if 'results' in st.session_state:
 
     with tab6:
         st.subheader("Human Design Ephemeris & Gate Imprints")
-        if HAS_SWISSEPH:
-            st.success("Swiss Ephemeris active!")
+        if HAS_EPHEM:
+            st.success("Ephemeris engine active!")
             hd_calc = calculate_human_design_gates(st.session_state['dob'], st.session_state['tob'])
             if hd_calc:
                 col_hd1, col_hd2 = st.columns(2)
@@ -462,7 +477,7 @@ if 'results' in st.session_state:
                     for p_name, (gate, line) in hd_calc["unconscious"].items():
                         st.write(f"**{p_name}:** Gate {gate}.{line}")
         else:
-            st.warning("`pyswisseph` build environment initializing or compiling in cloud container.")
+            st.warning("Installing ephemeris engine...")      
 
     st.markdown("---")
 
