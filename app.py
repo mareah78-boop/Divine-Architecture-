@@ -159,6 +159,13 @@ EXPANDED_GRABOVOI = {
 # 2. CALCULATION ENGINES
 # ==========================================
 
+def calculate_life_path(dob):
+    date_str = dob.strftime("%Y%m%d")
+    total = sum(int(digit) for digit in date_str)
+    while total > 9 and total not in (11, 22, 33):
+        total = sum(int(digit) for digit in str(total))
+    return total
+
 def reduce_arcana(val):
     val = abs(int(val))
     while val > 22:
@@ -241,7 +248,7 @@ def calculate_human_design_gates(dob, tob):
 # 3. PDF REPORT GENERATOR
 # ==========================================
 
-def generate_pdf_report(name, dob, tob, calc_data, hd_calc):
+def generate_pdf_report(name, dob, tob, calc_data, hd_calc, life_path):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=36, leftMargin=36, topMargin=36, bottomMargin=36)
     story = []
@@ -254,13 +261,14 @@ def generate_pdf_report(name, dob, tob, calc_data, hd_calc):
     
     # Document Header
     story.append(Paragraph(f"<b>MetaMatrix Destiny Blueprint: {name}</b>", title_style))
-    story.append(Paragraph(f"<b>Date of Birth:</b> {dob.strftime('%B %d, %Y')} | <b>Time of Birth:</b> {tob.strftime('%I:%M %p')}", body_style))
+    story.append(Paragraph(f"<b>Date of Birth:</b> {dob.strftime('%B %d, %Y')} | <b>Time of Birth:</b> {tob.strftime('%I:%M %p')} | <b>Life Path Number:</b> {life_path}", body_style))
     story.append(Spacer(1, 8))
     
     # 1. Core Energy
     story.append(Paragraph("Core Energy & Personal Identity", heading_style))
     e_val = calc_data["E"]
     e_title, e_desc = ARCANA_DICT.get(e_val, ("Unknown", ""))
+    story.append(Paragraph(f"<b>Numerology Life Path: Life Path {life_path}</b>", body_style))
     story.append(Paragraph(f"<b>Center Soul Arcana (E): Arcana {e_val} — {e_title}</b>", body_style))
     story.append(Paragraph(e_desc, body_style))
     story.append(Spacer(1, 6))
@@ -303,7 +311,7 @@ def generate_pdf_report(name, dob, tob, calc_data, hd_calc):
     story.append(Spacer(1, 6))
     
     # Integration Guidance: Core Energy
-    core_guide = "<b>Integration Guidance:</b> Use Center E as your primary soul baseline. Before taking action, audit whether you are acting out of high-frequency purpose or a low-frequency fear shadow."
+    core_guide = "<b>Integration Guidance:</b> Use Center E as your primary soul baseline along with your Life Path trajectory. Before taking action, audit whether you are acting out of high-frequency purpose or a low-frequency fear shadow."
     story.append(Paragraph(core_guide, table_cell_style))
     story.append(Spacer(1, 10))
 
@@ -391,6 +399,7 @@ with col3:
 # Perform Calculations
 calc_data = calculate_destiny_matrix(dob)
 hd_calc = calculate_human_design_gates(dob, tob)
+life_path_num = calculate_life_path(dob)
 
 # Tab Navigation
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
@@ -404,9 +413,20 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
 
 with tab1:
     st.header("Core Energy & Destiny Nodes")
-    e_title, e_desc = ARCANA_DICT.get(calc_data['E'], ("",""))
-    st.subheader(f"Center Soul Arcana (E): Arcana {calc_data['E']} — {e_title}")
-    st.info(e_desc)
+    
+    # Key Highlights: Life Path & Center Soul Arcana side-by-side
+    col_lp, col_sa = st.columns(2)
+    with col_lp:
+        st.metric(label="🔢 Numerology Life Path", value=f"Life Path {life_path_num}")
+        st.caption("Your core trajectory, overarching purpose, and primary life lesson.")
+    
+    with col_sa:
+        e_title, e_desc = ARCANA_DICT.get(calc_data['E'], ("",""))
+        st.metric(label="✨ Center Soul Arcana (E)", value=f"Arcana {calc_data['E']}")
+        st.caption(f"**{e_title}:** {e_desc}")
+        
+    st.markdown("---")
+
     st.subheader("Destiny Matrix Core Nodes Table")
     nodes_info = [
         ("Identity (A)", calc_data['A']),
@@ -423,7 +443,7 @@ with tab1:
 
     with st.expander("📖 How to Apply Your Core Energy Blueprint"):
         st.markdown("""
-        * **Your Baseline Frequency:** Center E represents your primary soul frequency. Use this as your 'North Star' for big decisions.
+        * **Life Path vs. Center Soul:** Your Life Path Number provides the overarching life lesson and trajectory, while your Center Soul Arcana (Node E) provides the internal energetic archetype you embody along that path.
         * **In Light vs. Shadow:** When making a decision, ask yourself if you are operating from your Arcana's core gift or its shadow fear response.
         * **Daily Action:** Notice where you feel friction today. Are you resisting your natural outward projection (Position A)?
         """)
@@ -528,7 +548,7 @@ with tab5:
 with tab6:
     st.header("Generate Complete PDF Blueprint")
     st.markdown("Download a fully formatted PDF report including all Destiny Matrix nodes, ancestral support, chakras, Grabovoi codes, and Human Design imprints.")
-    pdf_buffer = generate_pdf_report(user_name, dob, tob, calc_data, hd_calc)
+    pdf_buffer = generate_pdf_report(user_name, dob, tob, calc_data, hd_calc, life_path_num)
     st.download_button(
         label="📥 Download Full PDF Blueprint",
         data=pdf_buffer,
