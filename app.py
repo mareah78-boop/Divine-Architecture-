@@ -7,7 +7,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 import ephem
 
-# --- Title and Header ---
+# --- Page Configuration ---
 st.set_page_config(page_title="MetaMatrix Destiny", layout="wide")
 st.title("MetaMatrix Destiny Engine")
 
@@ -70,7 +70,6 @@ def calculate_destiny_matrix(dob):
     return {'A': A, 'B': B, 'C': C, 'D': D, 'E': E, 'F': F, 'G': G, 'H': H, 'I': I}
 
 def calculate_human_design(dob, tob):
-    # Base calculation wrapper for ephem gate positions
     dt = datetime.datetime.combine(dob, tob)
     observer = ephem.Observer()
     observer.date = dt
@@ -187,9 +186,9 @@ def generate_pdf_report(name, dob, tob, calc_data, hd_calc):
 # --- User Input Controls ---
 col1, col2, col3 = st.columns(3)
 with col1:
-    user_name = st.text_input("Full Name", value="Princess Jasmine")
+    user_name = st.text_input("Full Name", value="First Middle Last")
 with col2:
-    dob = st.date_input("Date of Birth", value=datetime.date(1985, 8, 15))
+    dob = st.date_input("Date of Birth", value=datetime.date(1978, 12, 19))
 with col3:
     time_unknown = st.checkbox("Time of Birth Unknown")
     if time_unknown:
@@ -202,48 +201,67 @@ with col3:
 calc_data = calculate_destiny_matrix(dob)
 hd_calc = calculate_human_design(dob, tob)
 
-# --- Display Output on Web UI ---
-st.header(f"Blueprint for {user_name}")
+# --- Tab Navigation Layout ---
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "Core Blueprint", 
+    "Ancestral Lines", 
+    "Human Design Ephemeris", 
+    "Grabovoi Portal", 
+    "Export Report"
+])
 
-# Section 1: Core Energy
-st.subheader("Core Energy Blueprint")
-cols = st.columns(5)
-cols[0].metric("Position A", calc_data['A'])
-cols[1].metric("Position B", calc_data['B'])
-cols[2].metric("Position C", calc_data['C'])
-cols[3].metric("Position D", calc_data['D'])
-cols[4].metric("Center E (Core)", calc_data['E'])
+with tab1:
+    st.subheader("Core Energy Blueprint")
+    cols = st.columns(5)
+    cols[0].metric("Position A", calc_data['A'])
+    cols[1].metric("Position B", calc_data['B'])
+    cols[2].metric("Position C", calc_data['C'])
+    cols[3].metric("Position D", calc_data['D'])
+    cols[4].metric("Center E (Core)", calc_data['E'])
 
-with st.expander("📖 How to Apply Your Core Energy Blueprint"):
-    st.markdown("""
-    * **Your Baseline Frequency:** Center E represents your primary soul frequency. Use this as your 'North Star' for big decisions.
-    * **In Light vs. Shadow:** When making a decision, ask yourself if you are operating from your Arcana's core gift or its shadow fear response.
-    * **Daily Action:** Notice where you feel friction today. Are you resisting your natural outward projection (Position A)?
-    """)
+    with st.expander("📖 How to Apply Your Core Energy Blueprint"):
+        st.markdown("""
+        * **Your Baseline Frequency:** Center E represents your primary soul frequency. Use this as your 'North Star' for big decisions.
+        * **In Light vs. Shadow:** When making a decision, ask yourself if you are operating from your Arcana's core gift or its shadow fear response.
+        * **Daily Action:** Notice where you feel friction today. Are you resisting your natural outward projection (Position A)?
+        """)
 
-# Section 2: Ancestral Lines
-st.subheader("Ancestral & Lineage Support")
-st.write(f"**Father Line:** Spirit Top = {calc_data['F']}, Material Bottom = {calc_data['I']}")
-st.write(f"**Mother Line:** Spirit Top = {calc_data['G']}, Material Bottom = {calc_data['H']}")
+with tab2:
+    st.subheader("Ancestral & Lineage Support")
+    st.write(f"**Father Line:** Spirit Top = {calc_data['F']}, Material Bottom = {calc_data['I']}")
+    st.write(f"**Mother Line:** Spirit Top = {calc_data['G']}, Material Bottom = {calc_data['H']}")
 
-with st.expander("📖 How to Apply Your Lineage Blueprint"):
-    st.markdown("""
-    * **Generational Gifts:** Identify inherited strengths from maternal and paternal lines to lean into.
-    * **Pattern Breaking:** Distinguish between your personal emotional patterns and ancestral cycles that are ready to be cleared.
-    """)
+    with st.expander("📖 How to Apply Your Lineage Blueprint"):
+        st.markdown("""
+        * **Generational Gifts:** Identify inherited strengths from maternal and paternal lines to lean into.
+        * **Pattern Breaking:** Distinguish between your personal emotional patterns and ancestral cycles that are ready to be cleared.
+        """)
 
-# Section 3: Grabovoi Manifestation Portal
-st.subheader("Grabovoi Quantum Portal")
-for title, info in EXPANDED_GRABOVOI.items():
-    st.write(f"**{title}** (`{info['code']}`): {info['focus']}")
+with tab3:
+    st.subheader("Human Design Ephemeris Mechanics")
+    st.write(f"**Sun Gate:** {hd_calc['Sun Gate']}")
+    st.write(f"**Ecliptic Longitude:** {hd_calc['Ecliptic Longitude']}°")
+    
+    with st.expander("📖 How to Apply Human Design Gates"):
+        st.markdown("""
+        * **Subconscious & Conscious Filter:** Use your Sun Gate as your primary behavioral lens.
+        * **Energy Timing:** Honor your strategy and authority before acting on Gate impulses.
+        """)
 
-# --- PDF Generation Button ---
-if st.button("Generate Downloadable PDF Report"):
-    pdf_path = generate_pdf_report(user_name, dob, tob, calc_data, hd_calc)
-    with open(pdf_path, "rb") as file:
-        st.download_button(
-            label="Download PDF Report",
-            data=file,
-            file_name="MetaMatrix_Destiny_Report.pdf",
-            mime="application/pdf"
-        )
+with tab4:
+    st.subheader("Grabovoi Quantum Portal")
+    for title, info in EXPANDED_GRABOVOI.items():
+        st.write(f"**{title}** (`{info['code']}`): {info['focus']}")
+        st.caption(f"Protocol: {info['protocol']}")
+
+with tab5:
+    st.subheader("Generate & Download PDF")
+    if st.button("Generate Downloadable PDF Report"):
+        pdf_path = generate_pdf_report(user_name, dob, tob, calc_data, hd_calc)
+        with open(pdf_path, "rb") as file:
+            st.download_button(
+                label="Download PDF Report",
+                data=file,
+                file_name="MetaMatrix_Destiny_Report.pdf",
+                mime="application/pdf"
+            )
