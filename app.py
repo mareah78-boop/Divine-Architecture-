@@ -317,6 +317,15 @@ def generate_pdf_report(name, dob, tob, calc_data, hd_calc):
     ]))
     story.append(t_nodes)
     story.append(Spacer(1, 10))
+    story.append(t_nodes)
+story.append(Spacer(1, 10))
+
+# Integration Guidance for Core Energy
+core_guide = "<b>Integration Guidance:</b> Use Center E as your primary 'North Star' baseline. Before making major life or career moves, audit whether you are acting from your Arcana's high-frequency gift or reacting out of its shadow pattern."
+story.append(Paragraph(core_guide, table_cell_style))
+story.append(Spacer(1, 12))
+
+# 2. Ancestral Lines
     
     # 2. Ancestral Lines
     story.append(Paragraph("Ancestral & Lineage Support", heading_style))
