@@ -539,7 +539,53 @@ def generate_pdf_report(name, dob, tob, calc_data, hd_calc, life_path_num, astro
 # ==========================================
 # 4. STREAMLIT USER INTERFACE
 # ==========================================
-
+# Custom Cosmic Dark Luxury Styling
+st.markdown("""
+    <style>
+    /* Dark Obsidian Background */
+    .stApp {
+        background-color: #0E1117;
+        color: #E0E0E0;
+    }
+    
+    /* Gold Highlights for Headers */
+    h1, h2, h3 {
+        color: #D4AF37 !important;
+        font-family: 'Cinzel', serif, sans-serif;
+    }
+    
+    /* Styled Metric Cards */
+    div[data-testid="stMetric"] {
+        background-color: #1A1D24;
+        border: 1px solid #D4AF37;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    
+    /* Gold Accents for Metric Values */
+    div[data-testid="stMetricValue"] {
+        color: #FFD700 !important;
+    }
+    
+    /* Custom Tab Styling */
+    button[data-baseweb="tab"] {
+        font-weight: bold;
+        color: #A0A0A0;
+    }
+    button[aria-selected="true"] {
+        color: #D4AF37 !important;
+        border-bottom-color: #D4AF37 !important;
+    }
+    
+    /* Table Styling */
+    div[data-testid="stTable"] {
+        border: 1px solid #333333;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    </style>
+""", unsafe_allow_html=True)
 st.set_page_config(page_title="MetaMatrix Destiny Engine", page_icon="🔮", layout="wide")
 
 st.title("🔮 MetaMatrix Destiny Engine")
