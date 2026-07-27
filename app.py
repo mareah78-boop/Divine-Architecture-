@@ -291,20 +291,32 @@ with tab2:
 with tab3:
     st.subheader("Human Design Ephemeris Mechanics")
     
-    c1, c2 = st.columns(2)
+    # Key Metrics Display
+    c1, c2, c3 = st.columns(3)
     with c1:
-        st.metric("Sun Gate", hd_calc['Sun Gate'])
+        st.metric("Conscious Sun Gate", f"Gate {hd_calc['Sun Gate']}")
     with c2:
+        # Earth is always exactly opposite the Sun (180 degrees)
+        earth_lon = (hd_calc['Ecliptic Longitude'] + 180.0) % 360.0
+        earth_gate = int((earth_lon / 360.0) * 64) + 1
+        st.metric("Conscious Earth Gate", f"Gate {earth_gate}")
+    with c3:
         st.metric("Ecliptic Longitude", f"{hd_calc['Ecliptic Longitude']}°")
         
     st.markdown("---")
-    st.markdown("#### **Sun Gate Mechanics**")
-    st.write(f"Your calculated Sun Gate is **Gate {hd_calc['Sun Gate']}**, derived from exact ecliptic longitude positioning ({hd_calc['Ecliptic Longitude']}°). This gate serves as your primary conscious filter and energetic output point in human design.")
-    
+    st.markdown("#### **Solar & Terrestrial Mechanics**")
+    st.write(f"• **Sun Gate ({hd_calc['Sun Gate']}):** Derived from exact ecliptic longitude ({hd_calc['Ecliptic Longitude']}°). Represents your primary conscious energy output, core personality filter, and fundamental life light.")
+    st.write(f"• **Earth Gate ({earth_gate}):** Located at {round(earth_lon, 2)}°. Represents your grounding mechanism—how you anchor your physical expression into the world.")
+
+    st.markdown("---")
+    st.markdown("#### **Ephemeris Data Breakdown**")
+    st.info(f"Calculated for **{dob.strftime('%B %d, %Y')}** at **{tob.strftime('%I:%M %p')}**. Ephemeris positions reflect true geometric planetary longitudes.")
+
     with st.expander("📖 How to Apply Human Design Gates"):
         st.markdown("""
-        * **Subconscious & Conscious Filter:** Use your Sun Gate as your primary behavioral lens.
-        * **Energy Timing:** Honor your strategy and authority before acting on Gate impulses.
+        * **Conscious Focus:** Use your Sun Gate as your primary behavioral lens and creative outlet.
+        * **Grounding:** When feeling unmoored, lean into the stability practices aligned with your Earth Gate.
+        * **Energy Timing:** Always honor your internal Strategy and Authority before taking initiative on raw Gate impulses.
         """)
 
 # --- TAB 4: GRABOVOI PORTAL ---
