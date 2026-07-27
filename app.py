@@ -387,11 +387,16 @@ st.markdown("---")
 # User Input Controls
 col1, col2, col3 = st.columns(3)
 with col1:
-    user_name = st.text_input("Full Name", value="Princess Jasmine")
+    user_name = st.text_input("Full Name", value="First Middle Last")
 with col2:
-    dob = st.date_input("Date of Birth", value=datetime.date(1985, 8, 15))
+    dob = st.date_input("Date of Birth", value=datetime.date(1978, 12, 19))
 with col3:
-    tob = st.time_input("Time of Birth", value=datetime.time(12, 0))
+    time_unknown = st.checkbox("Time of Birth Unknown")
+    if time_unknown:
+        tob = datetime.time(12, 0)
+        st.caption("Using 12:00 PM (Noon) default for calculation.")
+    else:
+        tob = st.time_input("Time of Birth", value=datetime.time(12, 0))
 
 # Perform Calculations
 calc_data = calculate_destiny_matrix(dob)
