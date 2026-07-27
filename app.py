@@ -104,6 +104,79 @@ GATE_DICTIONARY = {
     64: ("Confusion", "Mental surrender, divine illumination, and creative processing.")
 }
 
+GENE_KEYS = {
+    1: {"shadow": "Entropy", "gift": "Freshness", "siddhi": "Beauty"},
+    2: {"shadow": "Dislocation", "gift": "Orientation", "siddhi": "Unity"},
+    3: {"shadow": "Chaos", "gift": "Innovation", "siddhi": "Innocence"},
+    4: {"shadow": "Intolerance", "gift": "Understanding", "siddhi": "Forgiveness"},
+    5: {"shadow": "Impatience", "gift": "Patience", "siddhi": "Timelessness"},
+    6: {"shadow": "Conflict", "gift": "Diplomacy", "siddhi": "Peace"},
+    7: {"shadow": "Division", "gift": "Guidance", "siddhi": "Virtue"},
+    8: {"shadow": "Mediocrity", "gift": "Style", "siddhi": "Exquisiteness"},
+    9: {"shadow": "Inertia", "gift": "Determination", "siddhi": "Invincibility"},
+    10: {"shadow": "Self-Obsession", "gift": "Naturalness", "siddhi": "Being"},
+    11: {"shadow": "Obscurity", "gift": "Idealism", "siddhi": "Light"},
+    12: {"shadow": "Vanity", "gift": "Discrimination", "siddhi": "Purity"},
+    13: {"shadow": "Discord", "gift": "Discernment", "siddhi": "Empathy"},
+    14: {"shadow": "Compromise", "gift": "Competence", "siddhi": "Bounteousness"},
+    15: {"shadow": "Dullness", "gift": "Magnetism", "siddhi": "Florescence"},
+    16: {"shadow": "Indifference", "gift": "Versatility", "siddhi": "Mastery"},
+    17: {"shadow": "Opinion", "gift": "Foresight", "siddhi": "Omniscience"},
+    18: {"shadow": "Judgment", "gift": "Integrity", "siddhi": "Perfection"},
+    19: {"shadow": "Co-Dependence", "gift": "Sensitivity", "siddhi": "Sacrifice"},
+    20: {"shadow": "Superficiality", "gift": "Self-Assurance", "siddhi": "Presence"},
+    21: {"shadow": "Control", "gift": "Authority", "siddhi": "Valour"},
+    22: {"shadow": "Dishonour", "gift": "Graciousness", "siddhi": "Grace"},
+    23: {"shadow": "Complexity", "gift": "Simplicity", "siddhi": "Quintessence"},
+    24: {"shadow": "Addiction", "gift": "Invention", "siddhi": "Silence"},
+    25: {"shadow": "Constriction", "gift": "Acceptance", "siddhi": "Universal Love"},
+    26: {"shadow": "Pride", "gift": "Artfulness", "siddhi": "Invisibility"},
+    27: {"shadow": "Selfishness", "gift": "Altruism", "siddhi": "Philanthropy"},
+    28: {"shadow": "Purpose-lessness", "gift": "Totality", "siddhi": "Immortality"},
+    29: {"shadow": "Half-Heartedness", "gift": "Commitment", "siddhi": "Devotion"},
+    30: {"shadow": "Desire", "gift": "Lightness", "siddhi": "Rapture"},
+    31: {"shadow": "Arrogance", "gift": "Leadership", "siddhi": "Humility"},
+    32: {"shadow": "Failure", "gift": "Preservation", "siddhi": "Veneration"},
+    33: {"shadow": "Forgetting", "gift": "Mindfulness", "siddhi": "Revelation"},
+    34: {"shadow": "Force", "gift": "Strength", "siddhi": "Majesty"},
+    35: {"shadow": "Hunger", "gift": "Adventure", "siddhi": "Boundlessness"},
+    36: {"shadow": "Turbulence", "gift": "Humanity", "siddhi": "Compassion"},
+    37: {"shadow": "Weakness", "gift": "Equality", "siddhi": "Tenderness"},
+    38: {"shadow": "Struggle", "gift": "Perseverance", "siddhi": "Honor"},
+    39: {"shadow": "Dynamic Tension", "gift": "Dynamism", "siddhi": "Liberation"},
+    40: {"shadow": "Exhaustion", "gift": "Resolve", "siddhi": "Divine Will"},
+    41: {"shadow": "Fantasy", "gift": "Anticipation", "siddhi": "Emanation"},
+    42: {"shadow": "Expectation", "gift": "Detachment", "siddhi": "Celebration"},
+    43: {"shadow": "Deafness", "gift": "Insight", "siddhi": "Epiphany"},
+    44: {"shadow": "Interference", "gift": "Teamwork", "siddhi": "Synarchy"},
+    45: {"shadow": "Dominance", "gift": "Synergy", "siddhi": "Communion"},
+    46: {"shadow": "Seriousness", "gift": "Delight", "siddhi": "Ecstasy"},
+    47: {"shadow": "Oppression", "gift": "Transmutation", "siddhi": "Transfiguration"},
+    48: {"shadow": "Inadequacy", "gift": "Resourcefulness", "siddhi": "Wisdom"},
+    49: {"shadow": "Reaction", "gift": "Revolution", "siddhi": "Rebirth"},
+    50: {"shadow": "Corruption", "gift": "Equilibrium", "siddhi": "Harmony"},
+    51: {"shadow": "Agitation", "gift": "Initiative", "siddhi": "Awakening"},
+    52: {"shadow": "Stress", "gift": "Restraint", "siddhi": "Stillness"},
+    53: {"shadow": "Immature", "gift": "Expansion", "siddhi": "Superabundance"},
+    54: {"shadow": "Greed", "gift": "Aspiration", "siddhi": "Ascension"},
+    55: {"shadow": "Victimization", "gift": "Freedom", "siddhi": "Absolute Freedom"},
+    56: {"shadow": "Distraction", "gift": "Enrichment", "siddhi": "Intoxication"},
+    57: {"shadow": "Uneasiness", "gift": "Intuition", "siddhi": "Clarity"},
+    58: {"shadow": "Dissatisfaction", "gift": "Vitality", "siddhi": "Bliss"},
+    59: {"shadow": "Dishonesty", "gift": "Intimacy", "siddhi": "Transparency"},
+    60: {"shadow": "Limitation", "gift": "Realism", "siddhi": "Justice"},
+    61: {"shadow": "Psychosis", "gift": "Inspiration", "siddhi": "Sanctity"},
+    62: {"shadow": "Intellect", "gift": "Precision", "siddhi": "Impeccability"},
+    63: {"shadow": "Doubt", "gift": "Inquiry", "siddhi": "Truth"},
+    64: {"shadow": "Confusion", "gift": "Imagination", "siddhi": "Illumination"}
+}
+
+ZODIAC_SIGNS = [
+    ("Aries", "♈"), ("Taurus", "♉"), ("Gemini", "♊"), ("Cancer", "♋"),
+    ("Leo", "♌"), ("Virgo", "♍"), ("Libra", "♎"), ("Scorpio", "♏"),
+    ("Sagittarius", "♐"), ("Capricorn", "♑"), ("Aquarius", "♒"), ("Pisces", "♓")
+]
+
 EXPANDED_GRABOVOI = {
     "Financial Abundance & Wealth Flow": {
         "Code": "71427321893",
@@ -244,11 +317,67 @@ def calculate_human_design_gates(dob, tob):
         unconscious_gates[p_name] = longitude_to_gate(ecl_long_u)
     return {"conscious": conscious_gates, "unconscious": unconscious_gates}
 
+def calculate_astrology(dob, tob):
+    dt = datetime.datetime.combine(dob, tob)
+    ephem_date = ephem.Date(dt)
+    
+    bodies = {
+        "Ascendant": None,
+        "Sun": ephem.Sun(),
+        "Moon": ephem.Moon(),
+        "Mercury": ephem.Mercury(),
+        "Venus": ephem.Venus(),
+        "Mars": ephem.Mars(),
+        "Jupiter": ephem.Jupiter(),
+        "Saturn": ephem.Saturn(),
+        "Uranus": ephem.Uranus(),
+        "Neptune": ephem.Neptune(),
+        "Pluto": ephem.Pluto()
+    }
+    
+    # Observer position for Ascendant / Houses (defaulting to standard UTC reference)
+    observer = ephem.Observer()
+    observer.date = ephem_date
+    observer.lat = '30.4213'  # Default Reference Lat
+    observer.lon = '-87.2169'  # Default Reference Lon
+    
+    asc_deg = float(observer.sidereal_time()) * (180.0 / math.pi) % 360
+    
+    astro_results = []
+    
+    # Process Ascendant
+    asc_sign_idx = int(asc_deg / 30)
+    asc_sign_name, asc_symbol = ZODIAC_SIGNS[asc_sign_idx]
+    astro_results.append({
+        "Sign": f"{asc_sign_name} {asc_symbol}",
+        "Planet": "Ascendant (AC)",
+        "House": "1"
+    })
+    
+    for p_name, p_obj in bodies.items():
+        if p_name == "Ascendant":
+            continue
+        p_obj.compute(ephem_date)
+        ecl_long = float(ephem.Ecliptic(p_obj).lon) * (180.0 / math.pi) % 360
+        sign_idx = int(ecl_long / 30)
+        sign_name, symbol = ZODIAC_SIGNS[sign_idx]
+        
+        # Equal House calculation relative to Ascendant
+        house_num = int(((ecl_long - asc_deg) % 360) / 30) + 1
+        
+        astro_results.append({
+            "Sign": f"{sign_name} {symbol}",
+            "Planet": p_name,
+            "House": str(house_num)
+        })
+        
+    return astro_results
+
 # ==========================================
 # 3. PDF REPORT GENERATOR
 # ==========================================
 
-def generate_pdf_report(name, dob, tob, calc_data, hd_calc, life_path):
+def generate_pdf_report(name, dob, tob, calc_data, hd_calc, life_path_num, astro_data):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=36, leftMargin=36, topMargin=36, bottomMargin=36)
     story = []
@@ -261,14 +390,14 @@ def generate_pdf_report(name, dob, tob, calc_data, hd_calc, life_path):
     
     # Document Header
     story.append(Paragraph(f"<b>MetaMatrix Destiny Blueprint: {name}</b>", title_style))
-    story.append(Paragraph(f"<b>Date of Birth:</b> {dob.strftime('%B %d, %Y')} | <b>Time of Birth:</b> {tob.strftime('%I:%M %p')} | <b>Life Path Number:</b> {life_path}", body_style))
+    story.append(Paragraph(f"<b>Date of Birth:</b> {dob.strftime('%B %d, %Y')} | <b>Time of Birth:</b> {tob.strftime('%I:%M %p')} | <b>Life Path Number:</b> {life_path_num}", body_style))
     story.append(Spacer(1, 8))
     
     # 1. Core Energy
     story.append(Paragraph("Core Energy & Personal Identity", heading_style))
     e_val = calc_data["E"]
     e_title, e_desc = ARCANA_DICT.get(e_val, ("Unknown", ""))
-    story.append(Paragraph(f"<b>Numerology Life Path: Life Path {life_path}</b>", body_style))
+    story.append(Paragraph(f"<b>Numerology Life Path: Life Path {life_path_num}</b>", body_style))
     story.append(Paragraph(f"<b>Center Soul Arcana (E): Arcana {e_val} — {e_title}</b>", body_style))
     story.append(Paragraph(e_desc, body_style))
     story.append(Spacer(1, 6))
@@ -356,18 +485,48 @@ def generate_pdf_report(name, dob, tob, calc_data, hd_calc, life_path):
         story.append(Paragraph(f"• <b>{code_name}:</b> Code <code>{code_info['Code']}</code> — {code_info['Focus']}", body_style))
     story.append(Spacer(1, 10))
 
-    # 6. Human Design Section
+    # 6. Astrological Alignment Table
+    if astro_data:
+        story.append(Paragraph("Astrological Planetary Alignments", heading_style))
+        astro_pdf_data = [
+            [
+                Paragraph("<b>Sign</b>", table_header_style),
+                Paragraph("<b>Planet</b>", table_header_style),
+                Paragraph("<b>House</b>", table_header_style)
+            ]
+        ]
+        for row in astro_data:
+            astro_pdf_data.append([
+                Paragraph(row['Sign'], table_cell_style),
+                Paragraph(row['Planet'], table_cell_style),
+                Paragraph(row['House'], table_cell_style)
+            ])
+        t_astro = Table(astro_pdf_data, colWidths=[180, 180, 180])
+        t_astro.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#2C3E50")),
+            ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+            ('VALIGN', (0,0), (-1,-1), 'TOP'),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+            ('TOPPADDING', (0,0), (-1,-1), 4),
+        ]))
+        story.append(t_astro)
+        story.append(Spacer(1, 10))
+
+    # 7. Human Design & Gene Keys Section
     if hd_calc:
-        story.append(Paragraph("Human Design Ephemeris Imprints", heading_style))
+        story.append(Paragraph("Human Design & Gene Keys Ephemeris Imprints", heading_style))
         story.append(Paragraph("<b>Conscious (Personality) Imprint:</b>", body_style))
         for p_name, (gate, line) in hd_calc["conscious"].items():
             gate_title, gate_desc = GATE_DICTIONARY.get(gate, ("Unknown Gate", ""))
-            story.append(Paragraph(f"• <b>{p_name}:</b> Gate {gate}.{line} - <i>{gate_title}</i>: {gate_desc}", body_style))
+            gk = GENE_KEYS.get(gate, {"shadow": "", "gift": "", "siddhi": ""})
+            story.append(Paragraph(f"• <b>{p_name}:</b> Gate {gate}.{line} - <i>{gate_title}</i> | <b>Gene Key {gate}:</b> Shadow: {gk['shadow']} | Gift: {gk['gift']} | Siddhi: {gk['siddhi']}", body_style))
         story.append(Spacer(1, 6))
         story.append(Paragraph("<b>Unconscious (Design) Imprint:</b>", body_style))
         for p_name, (gate, line) in hd_calc["unconscious"].items():
             gate_title, gate_desc = GATE_DICTIONARY.get(gate, ("Unknown Gate", ""))
-            story.append(Paragraph(f"• <b>{p_name}:</b> Gate {gate}.{line} - <i>{gate_title}</i>: {gate_desc}", body_style))
+            gk = GENE_KEYS.get(gate, {"shadow": "", "gift": "", "siddhi": ""})
+            story.append(Paragraph(f"• <b>{p_name}:</b> Gate {gate}.{line} - <i>{gate_title}</i> | <b>Gene Key {gate}:</b> Shadow: {gk['shadow']} | Gift: {gk['gift']} | Siddhi: {gk['siddhi']}", body_style))
 
     doc.build(story)
     buffer.seek(0)
@@ -400,13 +559,14 @@ with col3:
 calc_data = calculate_destiny_matrix(dob)
 hd_calc = calculate_human_design_gates(dob, tob)
 life_path_num = calculate_life_path(dob)
+astro_data = calculate_astrology(dob, tob)
 
 # Tab Navigation
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "✨ Core & Nodes",
     "📜 Ancestral & Eras",
     "🧘 Chakra Alignment",
-    "🪐 Human Design",
+    "🪐 Human Design & Gene Keys",
     "🔢 Grabovoi Codes",
     "📄 PDF Blueprint"
 ])
@@ -510,25 +670,38 @@ with tab3:
         """)
 
 with tab4:
-    st.header("Human Design Ephemeris Imprints")
+    st.header("Human Design, Gene Keys & Astrological Alignments")
+    
+    # Astrological Planetary Alignment Table
+    st.subheader("🌌 Astrological Planetary Alignments")
+    st.table(astro_data)
+    st.markdown("---")
+
+    # Human Design & Gene Keys Breakdown
     col_c, col_u = st.columns(2)
     with col_c:
         st.subheader("Conscious (Personality) Imprint")
         for p_name, (gate, line) in hd_calc["conscious"].items():
             g_title, g_desc = GATE_DICTIONARY.get(gate, ("Unknown Gate", ""))
+            gk = GENE_KEYS.get(gate, {"shadow": "", "gift": "", "siddhi": ""})
             st.markdown(f"**{p_name}:** Gate {gate}.{line} - *{g_title}*")
+            st.caption(f"**Gene Key {gate}:** Shadow: `{gk['shadow']}` | Gift: `{gk['gift']}` | Siddhi: `{gk['siddhi']}`")
             st.caption(g_desc)
+            
     with col_u:
         st.subheader("Unconscious (Design) Imprint")
         for p_name, (gate, line) in hd_calc["unconscious"].items():
             g_title, g_desc = GATE_DICTIONARY.get(gate, ("Unknown Gate", ""))
+            gk = GENE_KEYS.get(gate, {"shadow": "", "gift": "", "siddhi": ""})
             st.markdown(f"**{p_name}:** Gate {gate}.{line} - *{g_title}*")
+            st.caption(f"**Gene Key {gate}:** Shadow: `{gk['shadow']}` | Gift: `{gk['gift']}` | Siddhi: `{gk['siddhi']}`")
             st.caption(g_desc)
 
-    with st.expander("📖 How to Apply Human Design Imprints"):
+    with st.expander("📖 How to Apply Human Design & Gene Keys Imprints"):
         st.markdown("""
         * **Conscious (Black):** Your mind and personality traits—what you actively notice about yourself.
         * **Unconscious (Red):** Body wisdom and genetic patterns—what others often notice about you before you do.
+        * **Gene Keys Frequency Shift:** Transmute your Gate's **Shadow** (reactive fear pattern) into its **Gift** (creative potential) to embody your **Siddhi** (highest divine state).
         """)
 
 with tab5:
@@ -547,8 +720,8 @@ with tab5:
 
 with tab6:
     st.header("Generate Complete PDF Blueprint")
-    st.markdown("Download a fully formatted PDF report including all Destiny Matrix nodes, ancestral support, chakras, Grabovoi codes, and Human Design imprints.")
-    pdf_buffer = generate_pdf_report(user_name, dob, tob, calc_data, hd_calc, life_path_num)
+    st.markdown("Download a fully formatted PDF report including all Destiny Matrix nodes, ancestral support, chakras, Grabovoi codes, Astrological Alignments, and Human Design/Gene Keys imprints.")
+    pdf_buffer = generate_pdf_report(user_name, dob, tob, calc_data, hd_calc, life_path_num, astro_data)
     st.download_button(
         label="📥 Download Full PDF Blueprint",
         data=pdf_buffer,
