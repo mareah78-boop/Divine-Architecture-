@@ -374,7 +374,7 @@ def calculate_astrology(dob, tob):
     return astro_results
 
 # ==========================================
-# 3. PDF REPORT GENERATOR
+# 3. PDF REPORT GENERATOR (Updated with full Integration Guidance)
 # ==========================================
 
 def generate_pdf_report(name, dob, tob, calc_data, hd_calc, life_path_num, astro_data):
@@ -437,11 +437,8 @@ def generate_pdf_report(name, dob, tob, calc_data, hd_calc, life_path_num, astro
         ('TOPPADDING', (0,0), (-1,-1), 4),
     ]))
     story.append(t_nodes)
-    story.append(Spacer(1, 6))
-    
-    # Integration Guidance: Core Energy
-    core_guide = "<b>Integration Guidance:</b> Use Center E as your primary soul baseline along with your Life Path trajectory. Before taking action, audit whether you are acting out of high-frequency purpose or a low-frequency fear shadow."
-    story.append(Paragraph(core_guide, table_cell_style))
+    story.append(Spacer(1, 4))
+    story.append(Paragraph("<b>Integration Guidance:</b> Use Center E as your primary soul baseline along with your Life Path trajectory. Audit whether you are operating from high-frequency purpose or fear shadow.", table_cell_style))
     story.append(Spacer(1, 10))
 
     # 2. Ancestral Lines
@@ -455,8 +452,7 @@ def generate_pdf_report(name, dob, tob, calc_data, hd_calc, life_path_num, astro
     story.append(Paragraph(f"• <b>Mother Line (Spirit Top - G):</b> Arcana {calc_data['G']} ({m_top_t}) — {m_top_d}", body_style))
     story.append(Paragraph(f"• <b>Mother Line (Material Bottom - H):</b> Arcana {calc_data['H']} ({m_bot_t}) — {m_bot_d}", body_style))
     story.append(Spacer(1, 4))
-    anc_guide = "<b>Integration Guidance:</b> Spirit nodes point to ancestral gifts ready to be reclaimed; Material nodes show inherited karmic themes to consciously resolve."
-    story.append(Paragraph(anc_guide, table_cell_style))
+    story.append(Paragraph("<b>Integration Guidance:</b> Spirit nodes point to ancestral gifts ready to be reclaimed; Material nodes show inherited karmic themes to consciously resolve.", table_cell_style))
     story.append(Spacer(1, 10))
 
     # 3. Destiny Eras
@@ -470,6 +466,8 @@ def generate_pdf_report(name, dob, tob, calc_data, hd_calc, life_path_num, astro
     for era_label, era_val in eras:
         e_t, e_d = ARCANA_DICT.get(era_val, ('',''))
         story.append(Paragraph(f"• <b>{era_label}:</b> Arcana {era_val} ({e_t}) — {e_d}", body_style))
+    story.append(Spacer(1, 4))
+    story.append(Paragraph("<b>Integration Guidance:</b> Identify your active 20-year cycle to align with its core growth theme and prepare for upcoming transition seasons.", table_cell_style))
     story.append(Spacer(1, 10))
 
     # 4. Chakra Map
@@ -477,12 +475,16 @@ def generate_pdf_report(name, dob, tob, calc_data, hd_calc, life_path_num, astro
     for c_name, vals in calc_data["chakras"].items():
         b_t, b_d = ARCANA_DICT.get(vals['Balance'], ('',''))
         story.append(Paragraph(f"• <b>{c_name}:</b> Harmonizer Arcana {vals['Balance']} ({b_t}) — {b_d}", body_style))
+    story.append(Spacer(1, 4))
+    story.append(Paragraph("<b>Integration Guidance:</b> Audit physical or emotional stagnation against chakra levels and meditate on the Harmonizer Arcana to clear friction.", table_cell_style))
     story.append(Spacer(1, 10))
 
     # 5. Grabovoi Codes Section
     story.append(Paragraph("Grabovoi Manifestation Frequency Repository", heading_style))
     for code_name, code_info in EXPANDED_GRABOVOI.items():
         story.append(Paragraph(f"• <b>{code_name}:</b> Code <code>{code_info['Code']}</code> — {code_info['Focus']}", body_style))
+    story.append(Spacer(1, 4))
+    story.append(Paragraph("<b>Integration Guidance:</b> Visualize the code in your heart space, vocalize digits individually, and project light through the frequency field.", table_cell_style))
     story.append(Spacer(1, 10))
 
     # 6. Astrological Alignment Table
@@ -527,6 +529,8 @@ def generate_pdf_report(name, dob, tob, calc_data, hd_calc, life_path_num, astro
             gate_title, gate_desc = GATE_DICTIONARY.get(gate, ("Unknown Gate", ""))
             gk = GENE_KEYS.get(gate, {"shadow": "", "gift": "", "siddhi": ""})
             story.append(Paragraph(f"• <b>{p_name}:</b> Gate {gate}.{line} - <i>{gate_title}</i> | <b>Gene Key {gate}:</b> Shadow: {gk['shadow']} | Gift: {gk['gift']} | Siddhi: {gk['siddhi']}", body_style))
+        story.append(Spacer(1, 4))
+        story.append(Paragraph("<b>Integration Guidance:</b> Transmute reactive Shadow patterns into creative Gifts to anchor your highest Siddhi state.", table_cell_style))
 
     doc.build(story)
     buffer.seek(0)
