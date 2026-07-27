@@ -38,10 +38,26 @@ ARCANA_DICT = {
 }
 
 EXPANDED_GRABOVOI = {
-    "Financial Abundance": {"code": "318 798", "focus": "Wealth Flow & Opportunity Alignment", "protocol": "Visualize the numbers illuminated in golden light at the solar plexus during breathwork."},
-    "Harmonization of Space": {"code": "14888948", "focus": "Energetic Clearing & Environmental Balance", "protocol": "Recite code mentally while walking through your living or working environment."},
-    "Self-Healing & Vitality": {"code": "1814321", "focus": "Cellular Regeneration & Vital Energy", "protocol": "Focus on the heart space and project the sequence into a sphere of silver light."},
-    "Transformation of Negative to Positive": {"code": "1888948", "focus": "Alchemical Transmutation of Shadow", "protocol": "Hold the sequence in mind during reflection, visualizing dense energy releasing into light."}
+    "Financial Abundance": {
+        "code": "318 798", 
+        "focus": "Wealth Flow & Opportunity Alignment", 
+        "protocol": "Visualize the numbers illuminated in golden light at the solar plexus during breathwork."
+    },
+    "Harmonization of Space": {
+        "code": "14888948", 
+        "focus": "Energetic Clearing & Environmental Balance", 
+        "protocol": "Recite code mentally while walking through your living or working environment."
+    },
+    "Self-Healing & Vitality": {
+        "code": "1814321", 
+        "focus": "Cellular Regeneration & Vital Energy", 
+        "protocol": "Focus on the heart space and project the sequence into a sphere of silver light."
+    },
+    "Transformation of Negative to Positive": {
+        "code": "1888948", 
+        "focus": "Alchemical Transmutation of Shadow", 
+        "protocol": "Hold the sequence in mind during reflection, visualizing dense energy releasing into light."
+    }
 }
 
 # --- Calculation Engines ---
@@ -135,7 +151,12 @@ def generate_pdf_report(name, dob, tob, calc_data, hd_calc):
     story.append(Paragraph("2. Ancestral & Lineage Support", heading_style))
     story.append(Spacer(1, 6))
     anc_data = [["Lineage Node", "Arcana", "Archetype", "Lineage Focus"]]
-    anc_map = [('F', 'Father Line (Spirit Top)'), ('I', 'Father Line (Material Bottom)'), ('G', 'Mother Line (Spirit Top)'), ('H', 'Mother Line (Material Bottom)')]
+    anc_map = [
+        ('F', 'Father Line (Spirit Top)'), 
+        ('I', 'Father Line (Material Bottom)'), 
+        ('G', 'Mother Line (Spirit Top)'), 
+        ('H', 'Mother Line (Material Bottom)')
+    ]
     for key, desc in anc_map:
         val = calc_data[key]
         t_title, t_desc = ARCANA_DICT.get(val, ("", ""))
@@ -210,14 +231,31 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Export Report"
 ])
 
+# --- TAB 1: CORE BLUEPRINT ---
 with tab1:
     st.subheader("Core Energy Blueprint")
+    
+    # Display Top Metrics
     cols = st.columns(5)
     cols[0].metric("Position A", calc_data['A'])
     cols[1].metric("Position B", calc_data['B'])
     cols[2].metric("Position C", calc_data['C'])
     cols[3].metric("Position D", calc_data['D'])
     cols[4].metric("Center E (Core)", calc_data['E'])
+
+    st.markdown("---")
+    st.markdown("### Detailed Arcana Archetypes & Meanings")
+    
+    # Display Detailed Cards with Full Meanings
+    for key in ['A', 'B', 'C', 'D', 'E']:
+        val = calc_data[key]
+        title, desc = ARCANA_DICT.get(val, ("Unknown", "No description available."))
+        label = f"Position {key}" if key != 'E' else "Center E (Core Soul Essence)"
+        
+        with st.container():
+            st.markdown(f"#### **{label}**: Arcana {val} — *{title}*")
+            st.write(f"**Meaning:** {desc}")
+            st.markdown("---")
 
     with st.expander("📖 How to Apply Your Core Energy Blueprint"):
         st.markdown("""
@@ -226,10 +264,22 @@ with tab1:
         * **Daily Action:** Notice where you feel friction today. Are you resisting your natural outward projection (Position A)?
         """)
 
+# --- TAB 2: ANCESTRAL LINES ---
 with tab2:
     st.subheader("Ancestral & Lineage Support")
-    st.write(f"**Father Line:** Spirit Top = {calc_data['F']}, Material Bottom = {calc_data['I']}")
-    st.write(f"**Mother Line:** Spirit Top = {calc_data['G']}, Material Bottom = {calc_data['H']}")
+    
+    anc_map = [
+        ('F', 'Father Line (Spirit Top)', calc_data['F']),
+        ('I', 'Father Line (Material Bottom)', calc_data['I']),
+        ('G', 'Mother Line (Spirit Top)', calc_data['G']),
+        ('H', 'Mother Line (Material Bottom)', calc_data['H'])
+    ]
+    
+    for key, desc, val in anc_map:
+        title, info = ARCANA_DICT.get(val, ("Unknown", "No description available."))
+        st.markdown(f"#### **{desc}**: Arcana {val} — *{title}*")
+        st.write(f"**Lineage Archetype Focus:** {info}")
+        st.markdown("---")
 
     with st.expander("📖 How to Apply Your Lineage Blueprint"):
         st.markdown("""
@@ -237,10 +287,19 @@ with tab2:
         * **Pattern Breaking:** Distinguish between your personal emotional patterns and ancestral cycles that are ready to be cleared.
         """)
 
+# --- TAB 3: HUMAN DESIGN ---
 with tab3:
     st.subheader("Human Design Ephemeris Mechanics")
-    st.write(f"**Sun Gate:** {hd_calc['Sun Gate']}")
-    st.write(f"**Ecliptic Longitude:** {hd_calc['Ecliptic Longitude']}°")
+    
+    c1, c2 = st.columns(2)
+    with c1:
+        st.metric("Sun Gate", hd_calc['Sun Gate'])
+    with c2:
+        st.metric("Ecliptic Longitude", f"{hd_calc['Ecliptic Longitude']}°")
+        
+    st.markdown("---")
+    st.markdown("#### **Sun Gate Mechanics**")
+    st.write(f"Your calculated Sun Gate is **Gate {hd_calc['Sun Gate']}**, derived from exact ecliptic longitude positioning ({hd_calc['Ecliptic Longitude']}°). This gate serves as your primary conscious filter and energetic output point in human design.")
     
     with st.expander("📖 How to Apply Human Design Gates"):
         st.markdown("""
@@ -248,14 +307,20 @@ with tab3:
         * **Energy Timing:** Honor your strategy and authority before acting on Gate impulses.
         """)
 
+# --- TAB 4: GRABOVOI PORTAL ---
 with tab4:
     st.subheader("Grabovoi Quantum Portal")
+    
     for title, info in EXPANDED_GRABOVOI.items():
-        st.write(f"**{title}** (`{info['code']}`): {info['focus']}")
-        st.caption(f"Protocol: {info['protocol']}")
+        with st.expander(f"✨ **{title}** — Code: `{info['code']}`", expanded=True):
+            st.write(f"**Focus Area:** {info['focus']}")
+            st.write(f"**Activation Protocol:** {info['protocol']}")
 
+# --- TAB 5: PDF EXPORT ---
 with tab5:
-    st.subheader("Generate & Download PDF")
+    st.subheader("Generate & Download PDF Report")
+    st.write("Click below to build a full, high-resolution PDF report containing all calculated blueprints, lineage markers, and integration guides.")
+    
     if st.button("Generate Downloadable PDF Report"):
         pdf_path = generate_pdf_report(user_name, dob, tob, calc_data, hd_calc)
         with open(pdf_path, "rb") as file:
